@@ -22,7 +22,9 @@ class MainActivity : ComponentActivity( ) {
                 }
             }
         }
-        // We need to change the sourcecode to use
+        // We need to change the sourcecode so we can pass the board into
+        // the solver the way we want, but otherwise this works.
+        // Cannot guarantee speed however!
         val board = Sudoku.Builder().setLevel(Level.MEDIUM).build()
         if(Solver.solvable(board.grid).first) {
             Solver.printGrid()
