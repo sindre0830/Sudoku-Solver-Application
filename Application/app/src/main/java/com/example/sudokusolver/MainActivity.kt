@@ -1,6 +1,7 @@
 package com.example.sudokusolver
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
@@ -10,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity( ) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -20,6 +21,13 @@ class MainActivity : ComponentActivity() {
                     Greeting("Android")
                 }
             }
+        }
+        // We need to change the sourcecode to use
+        val board = Sudoku.Builder().setLevel(Level.MEDIUM).build()
+        if(Solver.solvable(board.grid).first) {
+            Solver.printGrid()
+        } else {
+            Log.d("UNSOLVABLE", "BOO")
         }
     }
 }
