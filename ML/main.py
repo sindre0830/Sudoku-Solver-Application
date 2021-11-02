@@ -9,9 +9,13 @@ from model import (
     trainModel
 )
 # import foreign modules
+import os
 import tensorflow as tf
 
 
+# suppress info and warnings outputted by tensorflow
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 # enable memory growth for gpu devices
 # source: https://stackoverflow.com/a/55541385/8849692
 gpu_devices = tf.config.experimental.list_physical_devices('GPU')
