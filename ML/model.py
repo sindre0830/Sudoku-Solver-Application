@@ -1,3 +1,5 @@
+# import local modules
+import dictionary as dict
 # import foreign modules
 import keras.models
 import keras.layers.convolutional
@@ -30,3 +32,19 @@ def generateModel():
         metrics=['accuracy']
     )
     return model
+
+
+# Train model and evaluate when finished.
+def trainModel(model: keras.models.Sequential, xTrain, yTrain, xTest, yTest):
+    # fit model by parameters
+    results = model.fit(
+        xTrain,
+        yTrain,
+        batch_size=dict.BATCH_SIZE,
+        epochs=dict.EPOCHS,
+        verbose=False,
+        validation_data=(xTest, yTest)
+    )
+    # evaluate model and output results
+    model.evaluate(xTest, yTest)
+    return model, results
