@@ -7,7 +7,8 @@ from preprocessing import (
 from model import (
     generateModel,
     trainModel,
-    analyzeModel
+    analyzeModel,
+    plotResults
 )
 # import foreign modules
 import os
@@ -40,5 +41,6 @@ model.summary()
 model, results = trainModel(model, xTrain, yTrain, xTest, yTest)
 
 
-# analyze model and print results
+# analyze model and plot results
 analyzeModel(model, xTest, yTest)
+plotResults(results)
