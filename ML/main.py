@@ -5,5 +5,5 @@ from preprocessing import (
 
 
 # download MNIST dataset
-xTrain, xTest, yTrain, yTest = downloadDataset()
-xTrain, xTest, yTrain, yTest = reshapeDataset(xTrain, xTest, yTrain, yTest)
+dataset = downloadDataset()
+dataset = reshapeDataset(dataset)
