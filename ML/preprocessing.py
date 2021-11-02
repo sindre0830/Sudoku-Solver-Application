@@ -1,3 +1,4 @@
+# import foreign modules
 from tensorflow.keras.datasets import mnist
 import keras.utils.np_utils
 
