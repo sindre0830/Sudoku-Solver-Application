@@ -5,6 +5,8 @@ import keras.models
 import keras.layers.convolutional
 import keras.layers.pooling
 import keras.layers.core
+import numpy as np
+import sklearn.metrics
 
 
 # Generate convolutional neural network model.
@@ -48,3 +50,15 @@ def trainModel(model: keras.models.Sequential, xTrain, yTrain, xTest, yTest):
     # evaluate model and output results
     model.evaluate(xTest, yTest)
     return model, results
+
+
+# Analyze model on testing data and output classification report and confusion matrix.
+def analyzeModel(model: keras.models.Sequential, xTest, yTest):
+    # predict testing data on model
+    yPred = model.predict(xTest)
+    # flatten each array to get index of highest value
+    yPred = np.argmax(yPred, axis=1)
+    yTest = np.argmax(yTest, axis=1)
+    # print classification report and confusion matrix
+    print(sklearn.metrics.classification_report(yTest, yPred, zero_division=1))
+    print(sklearn.metrics.confusion_matrix(yTest, yPred))
