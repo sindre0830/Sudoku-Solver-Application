@@ -8,7 +8,8 @@ from model import (
     generateModel,
     trainModel,
     analyzeModel,
-    plotResults
+    plotResults,
+    saveModel
 )
 # import foreign modules
 import os
@@ -44,3 +45,7 @@ model, results = trainModel(model, xTrain, yTrain, xTest, yTest)
 # analyze model and plot results
 analyzeModel(model, xTest, yTest)
 plotResults(results)
+
+
+# prompt user to save model
+saveModel(model)
