@@ -8,6 +8,7 @@ import keras.layers.core
 import numpy as np
 import sklearn.metrics
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 
 # Generate convolutional neural network model.
@@ -96,4 +97,11 @@ def plotResults(results):
 def saveModel(model: keras.models.Sequential):
     inp = input("Do you want to save the model? Y/N: ")
     if inp.lower() == "y":
+        # save model in HDF5 format
         model.save("Data/model.h5")
+        # convert model to tensorflow lite and save it
+        # source: https://www.tensorflow.org/lite/convert/
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        tflite_model = converter.convert()
+        with open("Data/model.tflite", "wb") as file:
+            file.write(tflite_model)
