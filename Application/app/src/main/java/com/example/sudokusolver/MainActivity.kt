@@ -1,7 +1,6 @@
 package com.example.sudokusolver
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -24,23 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val sudokuBoard: SnapshotStateList<SudokuBoardItem> =
                 remember { setupBoard(mockBoard(9)) }
-            val (indexedClicked, setIndexedClicked) = remember { mutableStateOf(0) }
-
-            fun handleItemClicked(index: Int) {
-                if (index in 0 until sudokuBoard.size) {
-
-                    // reset last clicked
-                    sudokuBoard[indexedClicked] =
-                        sudokuBoard[indexedClicked].copy(backgroundColor = Color.White)
-                    setIndexedClicked(index)
-
-                    // update new clicked
-                    sudokuBoard[index] =
-                        sudokuBoard[index].copy(backgroundColor = Teal200)
-                }
-            }
-
-
+            val (sudokuBoxClicked, setSudokuBoxClicked) = remember { mutableStateOf(0) }
 
             SudokuSolverTheme {
                 Surface(
@@ -56,10 +39,23 @@ class MainActivity : ComponentActivity() {
                         SudokuBoard(
                             items = sudokuBoard,
                             verticalLength = verticalLength,
-                            onItemClick = { index: Int -> handleItemClicked(index) }
+                            onItemClick = { index: Int ->
+                                handleSudokuItemClicked(
+                                    newSudokuBox = index,
+                                    currentSudokuBox = sudokuBoxClicked,
+                                    setSudokuBox = setSudokuBoxClicked,
+                                    sudokuBoard = sudokuBoard
+                                )
+                            }
                         )
                         ActionMenu(handleActionMenuItems(sudokuBoard))
-                        BottomNumbers(handleClick = {})//TODO: Handle clicks
+                        BottomNumbers(handleClick = { numberClicked ->
+                            handleBottomNumberClicked(
+                                bottomNumber = numberClicked,
+                                sudokuBox = sudokuBoxClicked,
+                                sudokuBoard = sudokuBoard,
+                            )
+                        })
                         Spacer(modifier = Modifier.padding(bottom = 10.dp))
                     }
                 }
@@ -77,7 +73,74 @@ fun setupBoard(items: List<Int>): SnapshotStateList<SudokuBoardItem> {
             )
         )
     }
-
     return list
 }
 
+
+fun handleBottomNumberClicked(
+    sudokuBox: Int,
+    bottomNumber: Int,
+    sudokuBoard: SnapshotStateList<SudokuBoardItem>,
+) {
+    if (isBoxWithinBoard(sudokuBox, sudokuBoard.size) && isValidSudokuNum(bottomNumber)) {
+        mutateBoard(
+            index = sudokuBox,
+            board = sudokuBoard,
+            number = bottomNumber
+        )
+    }
+}
+
+fun handleSudokuItemClicked(
+    newSudokuBox: Int,
+    currentSudokuBox: Int,
+    setSudokuBox: (Int) -> Unit,
+    sudokuBoard: SnapshotStateList<SudokuBoardItem>,
+) {
+    if (isBoxWithinBoard(newSudokuBox, sudokuBoard.size)) {
+        if (newSudokuBox != currentSudokuBox) {
+            updateBackgroundColor(newSudokuBox, currentSudokuBox, setSudokuBox, sudokuBoard)
+        }
+    }
+}
+
+fun updateBackgroundColor(
+    newSudokuBox: Int,
+    currentSudokuBox: Int,
+    setSudokuBox: (Int) -> Unit,
+    sudokuBoard: SnapshotStateList<SudokuBoardItem>,
+) {
+    // reset old box
+    mutateBoard(
+        index = currentSudokuBox,
+        board = sudokuBoard,
+        backgroundColor = Color.White,
+    )
+
+    setSudokuBox(newSudokuBox)
+
+    // update new clicked
+    mutateBoard(
+        index = newSudokuBox,
+        board = sudokuBoard,
+        backgroundColor = Teal200,
+    )
+
+}
+
+fun isBoxWithinBoard(n: Int, boardSize: Int) = n in 0 until boardSize
+
+fun isValidSudokuNum(n: Int) = n in 1..9
+
+// mutateBoard mutates a sudoku item and allows for optional arguments
+fun mutateBoard(
+    index: Int,
+    backgroundColor: Color? = null,
+    number: Int? = null,
+    board: SnapshotStateList<SudokuBoardItem>,
+) {
+    board[index] = board[index].copy(
+        backgroundColor = backgroundColor ?: board[index].backgroundColor,
+        number = number ?: board[index].number
+    )
+}
