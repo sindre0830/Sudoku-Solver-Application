@@ -12,6 +12,7 @@ import androidx.compose.material.icons.rounded.Undo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -53,7 +54,7 @@ fun ActionMenu(actionMenuItems: List<ActionMenuItem>) {
 }
 
 
-fun handleActionMenuItems(sudokuBoard: MutableList<Int>): List<ActionMenuItem> {
+fun handleActionMenuItems(sudokuBoard: MutableList<SudokuBoardItem>): List<ActionMenuItem> {
     // TODO: Review icons used. Finding good icons is difficult...
     // See options: https://fonts.google.com/icons?selected=Material+Icons&icon.query=delete
     // We can also import external icons if we do not find anything we are happy with.
@@ -86,8 +87,8 @@ fun handleActionMenuItems(sudokuBoard: MutableList<Int>): List<ActionMenuItem> {
     )
 }
 
-fun clearSudokuBoard(sudokuBoard: MutableList<Int>) {
+fun clearSudokuBoard(sudokuBoard: MutableList<SudokuBoardItem>) {
     for (i in 0 until sudokuBoard.size) {
-        sudokuBoard[i] = 0
+        sudokuBoard[i] = sudokuBoard[i].copy(number = 0, backgroundColor = Color.White)
     }
 }

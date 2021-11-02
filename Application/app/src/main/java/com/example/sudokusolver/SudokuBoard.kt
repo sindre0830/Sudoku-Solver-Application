@@ -1,7 +1,9 @@
 package com.example.sudokusolver
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -12,6 +14,11 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 
 
+data class SudokuBoardItem(
+    val number: Int,
+    val backgroundColor: Color = Color.White
+)
+
 fun mockBoard(verticalLength: Int): MutableList<Int> {
     val board: MutableList<Int> = mutableListOf()
     for (i in 0 until verticalLength * verticalLength) {
@@ -21,8 +28,12 @@ fun mockBoard(verticalLength: Int): MutableList<Int> {
 }
 
 @Composable
-fun SudokuBoard(items: List<Int>, verticalLength: Int) {
-    validateBoard(items, verticalLength)
+fun SudokuBoard(
+    items: List<SudokuBoardItem>,
+    verticalLength: Int,
+    onItemClick: (index: Int) -> Unit
+) {
+    validateBoard(items.map { it.number }, verticalLength)
     var currentItem = 0
 
     Column(
@@ -32,7 +43,12 @@ fun SudokuBoard(items: List<Int>, verticalLength: Int) {
             for (row in verticalLength downTo 1) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     for (rowItem in 0 until verticalLength) {
-                        SudokuBoxItem(items[currentItem++])
+                        SudokuBoxItem(
+                            index = currentItem,
+                            item = items[currentItem],
+                            onItemClick = onItemClick
+                        )
+                        currentItem++
                     }
                 }
             }
@@ -64,7 +80,11 @@ fun isValidSudokuNumbers(items: List<Int>): Boolean = items.all { it in 0..9 }
 
 
 @Composable
-fun RowScope.SudokuBoxItem(number: Int) {
+fun RowScope.SudokuBoxItem(
+    index: Int,
+    item: SudokuBoardItem,
+    onItemClick: (index: Int) -> Unit
+) {
     Box(
         modifier = Modifier
             .border(
@@ -75,9 +95,11 @@ fun RowScope.SudokuBoxItem(number: Int) {
             .fillMaxWidth()
             .aspectRatio(1f)
             .weight(1f)
+            .clickable { onItemClick(index) }
+            .background(item.backgroundColor)
     ) {
         Text(
-            text = if (number == 0) "" else number.toString(),
+            text = if (item.number == 0) "" else item.number.toString(),
             modifier = Modifier.align(Alignment.Center)
         )
     }
