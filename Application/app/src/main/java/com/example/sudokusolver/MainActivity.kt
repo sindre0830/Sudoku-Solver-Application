@@ -24,10 +24,11 @@ class MainActivity : ComponentActivity() {
             val sudokuBoard: SnapshotStateList<SudokuBoardItem> =
                 remember { setupBoard(mockBoard(9)) }
             val (sudokuBoxClicked, setSudokuBoxClicked) = remember { mutableStateOf(0) }
+            val history: SnapshotStateList<HistoryItem> = remember { mutableStateListOf() }
 
             SudokuSolverTheme {
                 Surface(
-                    color = MaterialTheme.colors.background,
+                    color = Color.White, // TODO: Add darktheme handling
                 ) {
                     Column(
                         modifier = Modifier
@@ -48,12 +49,18 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         )
-                        ActionMenu(handleActionMenuItems(sudokuBoard))
+                        ActionMenu(
+                            handleActionMenuItems(
+                                sudokuBoard = sudokuBoard,
+                                history = history
+                            )
+                        )
                         BottomNumbers(handleClick = { numberClicked ->
                             handleBottomNumberClicked(
                                 bottomNumber = numberClicked,
                                 sudokuBox = sudokuBoxClicked,
                                 sudokuBoard = sudokuBoard,
+                                history = history
                             )
                         })
                         Spacer(modifier = Modifier.padding(bottom = 10.dp))
@@ -81,8 +88,16 @@ fun handleBottomNumberClicked(
     sudokuBox: Int,
     bottomNumber: Int,
     sudokuBoard: SnapshotStateList<SudokuBoardItem>,
+    history: SnapshotStateList<HistoryItem>
 ) {
     if (isBoxWithinBoard(sudokuBox, sudokuBoard.size) && isValidSudokuNum(bottomNumber)) {
+        history.add(
+            HistoryItem(
+                newValue = bottomNumber,
+                oldValue = sudokuBoard[sudokuBox].number,
+                sudokuItem = sudokuBox
+            )
+        )
         mutateBoard(
             index = sudokuBox,
             board = sudokuBoard,
