@@ -90,3 +90,10 @@ def plotResults(results):
     plt.ylabel('Accuracy')
     plt.legend()
     plt.show()
+
+
+# Ask user to save model to disk in HDF5 format.
+def saveModel(model: keras.models.Sequential):
+    inp = input("Do you want to save the model? Y/N: ")
+    if inp.lower() == "y":
+        model.save("Data/model.h5")
