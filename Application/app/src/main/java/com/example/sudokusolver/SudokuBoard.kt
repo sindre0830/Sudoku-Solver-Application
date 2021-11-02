@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 
 
-fun mockBoard(verticalLength: Int): List<Int> {
+fun mockBoard(verticalLength: Int): MutableList<Int> {
     val board: MutableList<Int> = mutableListOf()
     for (i in 0 until verticalLength * verticalLength) {
         board.add(i % 10)
@@ -43,8 +43,12 @@ fun SudokuBoard(items: List<Int>, verticalLength: Int) {
 
 // TODO: figure out a nice way to handle error and display them to user
 fun validateBoard(items: List<Int>, verticalLength: Int) {
-    if (verticalLength == 0 || !isAxesSameNumber(items, verticalLength)) {
-        throw Error("board length cannot be 0, and it has to be 9x9 etc")
+    if (verticalLength == 0) {
+        throw Error("board length cannot be 0")
+    }
+
+    if (!isAxesSameNumber(items, verticalLength)) {
+        throw Error("The board can only be 9x9 or 6x6")
     }
     if (!isValidSudokuNumbers(items)) {
         throw Error("accepted numbers are 0-9")
@@ -69,7 +73,7 @@ fun RowScope.SudokuBoxItem(number: Int) {
                 shape = RectangleShape
             )
             .fillMaxWidth()
-            .height(60.dp)
+            .aspectRatio(1f)
             .weight(1f)
     ) {
         Text(
