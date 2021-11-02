@@ -5,12 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 
 
@@ -36,24 +38,21 @@ fun SudokuBoard(
     validateBoard(items.map { it.number }, verticalLength)
     var currentItem = 0
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Column {
-            for (row in verticalLength downTo 1) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    for (rowItem in 0 until verticalLength) {
-                        SudokuBoxItem(
-                            index = currentItem,
-                            item = items[currentItem],
-                            onItemClick = onItemClick
-                        )
-                        currentItem++
-                    }
+    Column {
+        for (row in verticalLength downTo 1) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                for (rowItem in 0 until verticalLength) {
+                    SudokuBoxItem(
+                        index = currentItem,
+                        item = items[currentItem],
+                        onItemClick = onItemClick
+                    )
+                    currentItem++
                 }
             }
         }
     }
+
 }
 
 
@@ -89,17 +88,18 @@ fun RowScope.SudokuBoxItem(
         modifier = Modifier
             .border(
                 // TODO: fix color on different modes https://developer.android.com/jetpack/compose/themes/material
-                border = BorderStroke(1.dp, Color.Black),
+                border = BorderStroke(1.dp, MaterialTheme.colors.onBackground),
                 shape = RectangleShape
             )
             .fillMaxWidth()
             .aspectRatio(1f)
             .weight(1f)
             .clickable { onItemClick(index) }
-            .background(item.backgroundColor)
+            .background(if (item.backgroundColor == Color.White) MaterialTheme.colors.background else item.backgroundColor)
     ) {
         Text(
             text = if (item.number == 0) "" else item.number.toString(),
+            style = TextStyle(color = MaterialTheme.colors.onBackground),
             modifier = Modifier.align(Alignment.Center)
         )
     }

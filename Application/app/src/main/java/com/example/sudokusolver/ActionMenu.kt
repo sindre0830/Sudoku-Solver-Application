@@ -96,7 +96,12 @@ fun handleActionMenuItems(
 
 fun clearSudokuBoard(sudokuBoard: SnapshotStateList<SudokuBoardItem>) {
     for (i in 0 until sudokuBoard.size) {
-        sudokuBoard[i] = sudokuBoard[i].copy(number = 0, backgroundColor = Color.White)
+        mutateBoard(
+            index = i,
+            number = 0,
+            backgroundColor = Color.White,
+            board = sudokuBoard
+        )
     }
 }
 
@@ -112,7 +117,5 @@ fun undoOperation(
             number = historyItem.oldValue,
             board = sudokuBoard
         )
-
-
     }
 }

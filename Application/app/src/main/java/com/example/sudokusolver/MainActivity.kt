@@ -13,8 +13,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.sudokusolver.ui.theme.ColorBoxSelected
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
-import com.example.sudokusolver.ui.theme.Teal200
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
 
             SudokuSolverTheme {
                 Surface(
-                    color = Color.White, // TODO: Add darktheme handling
+                    color = MaterialTheme.colors.background,
                 ) {
                     Column(
                         modifier = Modifier
@@ -138,7 +138,7 @@ fun updateBackgroundColor(
     mutateBoard(
         index = newSudokuBox,
         board = sudokuBoard,
-        backgroundColor = Teal200,
+        backgroundColor = ColorBoxSelected,
     )
 
 }
