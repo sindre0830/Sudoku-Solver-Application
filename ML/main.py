@@ -1,9 +1,11 @@
 from preprocessing import (
     downloadDataset,
-    reshapeDataset
+    reshapeDataset,
+    normalizeData
 )
 
 
 # download MNIST dataset
 dataset = downloadDataset()
-dataset = reshapeDataset(dataset)
+xTrain, yTrain, xTest, yTest = reshapeDataset(dataset)
+xTrain, xTest = normalizeData(xTrain, xTest)
