@@ -22,15 +22,24 @@ class MainActivity : ComponentActivity( ) {
                 }
             }
         }
+
+        val board = GridModel
+        board.PrintBoard()
+        /*
+        // Generates boards!
+        val board = Sudoku.Builder().setLevel(Level.MEDIUM).build()
+        board.printGrid()
         // We need to change the sourcecode so we can pass the board into
         // the solver the way we want, but otherwise this works.
         // Cannot guarantee speed however!
-        val board = Sudoku.Builder().setLevel(Level.MEDIUM).build()
-        if(Solver.solvable(board.grid).first) {
-            Solver.printGrid()
+        // Need to optimize/multithread...
+        val solved = Solver.solvable(board.grid)
+        if(solved.first) {
+            Solver.printGrid(solved.second)
         } else {
             Log.d("UNSOLVABLE", "BOO")
         }
+         */
     }
 }
 

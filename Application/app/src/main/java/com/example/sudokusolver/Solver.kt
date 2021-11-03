@@ -24,25 +24,31 @@ internal object Solver {
     }
      */
 
-    fun solvable(grid: Array<IntArray>) : Pair<Boolean, Array<IntArray>> {
+    fun solvable(oldgrid: Array<IntArray>) : Pair<Boolean, Array<IntArray>> {
 
-        this.grid = grid.copy()
+        this.grid = oldgrid.copy()
         // can return grid here instead
         val solved = solve()
 
-        return Pair(solved, grid)
+        if(solved) {
+            return Pair(solved, this.grid)
+        } else {
+            return Pair(solved, oldgrid)
+        }
+
 
     }
 
     private fun Array<IntArray>.copy() = Array(size) { get(it).clone() }
 
-    private fun solve() : Boolean {
+    private fun solve() : Boolean{
         for (i in 0 until GRID_SIZE) {
             for (j in 0 until GRID_SIZE) {
                 if (grid[i][j] == 0) {
                     val availableDigits = getAvailableDigits(i, j)
                     for (k in availableDigits) {
                         grid[i][j] = k
+                        val temp = solve()
                         if (solve()) {
                             return true
                         }
@@ -60,34 +66,34 @@ internal object Solver {
         var availableDigits = mutableSetOf<Int>()
         availableDigits.addAll(digitsRange)
 
-        truncateByDigitsAlreadyUsedInRow(availableDigits, row)
+        truncateByDigitsAlreadyUsedInRow(grid, availableDigits, row)
         if (availableDigits.size > 1) {
-            truncateByDigitsAlreadyUsedInColumn(availableDigits, column)
+            truncateByDigitsAlreadyUsedInColumn(grid, availableDigits, column)
         }
         if (availableDigits.size > 1) {
-            truncateByDigitsAlreadyUsedInBox(availableDigits, row, column)
+            truncateByDigitsAlreadyUsedInBox(grid, availableDigits, row, column)
         }
 
         return availableDigits.asIterable()
     }
 
-    private fun truncateByDigitsAlreadyUsedInRow(availableDigits: MutableSet<Int>, row: Int) {
+    private fun truncateByDigitsAlreadyUsedInRow(board: Array<IntArray>, availableDigits: MutableSet<Int>, row: Int) {
         for (i in MIN_DIGIT_INDEX..MAX_DIGIT_INDEX) {
-            if (grid[row][i] != 0) {
+            if (board[row][i] != 0) {
                 availableDigits.remove(grid[row][i])
             }
         }
     }
 
-    private fun truncateByDigitsAlreadyUsedInColumn(availableDigits: MutableSet<Int>, column: Int) {
+    private fun truncateByDigitsAlreadyUsedInColumn(board: Array<IntArray>, availableDigits: MutableSet<Int>, column: Int) {
         for (i in MIN_DIGIT_INDEX..MAX_DIGIT_INDEX) {
-            if (grid[i][column] != 0) {
+            if (board[i][column] != 0) {
                 availableDigits.remove(grid[i][column])
             }
         }
     }
 
-    private fun truncateByDigitsAlreadyUsedInBox(availableDigits: MutableSet<Int>, row: Int, column: Int) {
+    private fun truncateByDigitsAlreadyUsedInBox(board: Array<IntArray>, availableDigits: MutableSet<Int>, row: Int, column: Int) {
         val rowStart = findBoxStart(row)
         val rowEnd = findBoxEnd(rowStart)
         val columnStart = findBoxStart(column)
@@ -106,10 +112,10 @@ internal object Solver {
 
     private fun findBoxEnd(index: Int) = index + BOX_SIZE - 1
 
-    fun printGrid() {
+    fun printGrid(board: Array<IntArray>) {
         for (i in 0 until GRID_SIZE) {
             for (j in 0 until GRID_SIZE) {
-                print(grid[i][j].toString().plus(" "))
+                print(board[i][j].toString().plus(" "))
             }
             println()
         }
