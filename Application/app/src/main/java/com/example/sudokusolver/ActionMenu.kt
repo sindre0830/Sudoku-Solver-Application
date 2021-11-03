@@ -5,10 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Calculate
-import androidx.compose.material.icons.rounded.Clear
-import androidx.compose.material.icons.rounded.FileDownload
-import androidx.compose.material.icons.rounded.Undo
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -19,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sudokusolver.ui.theme.ColorBoxSelected
 
 data class ActionMenuItem(
     val icon: ImageVector,
@@ -61,6 +59,7 @@ fun ActionMenu(actionMenuItems: List<ActionMenuItem>) {
 
 
 fun handleActionMenuItems(
+    sudokuItemClicked: Int,
     sudokuBoard: SnapshotStateList<SudokuBoardItem>,
     history: SnapshotStateList<HistoryItem>
 ): List<ActionMenuItem> {
@@ -81,6 +80,13 @@ fun handleActionMenuItems(
             },
         ),
         ActionMenuItem(
+            icon = Icons.Rounded.Delete,
+            contentDescriptionResourceId = R.string.action_menu_icon_description_delete,
+            handleClick = {
+                deleteSudokuItem(sudokuBoard, sudokuItemClicked)
+            },
+        ),
+        ActionMenuItem(
             icon = Icons.Rounded.FileDownload,
             contentDescriptionResourceId = R.string.action_menu_icon_description_import,
             handleClick = {},
@@ -91,6 +97,14 @@ fun handleActionMenuItems(
             handleClick = {}
 
         )
+    )
+}
+
+fun deleteSudokuItem(sudokuBoard: SnapshotStateList<SudokuBoardItem>, sudokuItemClicked: Int) {
+    mutateBoard(
+        index = sudokuItemClicked,
+        number = 0,
+        board = sudokuBoard
     )
 }
 
@@ -115,7 +129,17 @@ fun undoOperation(
         mutateBoard(
             index = historyItem.sudokuItem,
             number = historyItem.oldValue,
+            backgroundColor = Color.White,
             board = sudokuBoard
         )
+
+        // Only move color box selected if there are more history entries
+        if (history.isNotEmpty()) {
+            mutateBoard(
+                index = history[history.lastIndex].sudokuItem,
+                backgroundColor = ColorBoxSelected,
+                board = sudokuBoard
+            )
+        }
     }
 }

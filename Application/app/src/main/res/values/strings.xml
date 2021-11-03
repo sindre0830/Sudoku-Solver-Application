@@ -6,4 +6,5 @@
     <string name="action_menu_icon_description_remove">Undo</string>
     <string name="action_menu_icon_description_import">Import</string>
     <string name="action_menu_icon_description_solve">Solve</string>
+    <string name="action_menu_icon_description_delete">Delete</string>
 </resources>

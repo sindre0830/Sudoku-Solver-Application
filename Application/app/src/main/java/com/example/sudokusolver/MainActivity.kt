@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
                         )
                         ActionMenu(
                             handleActionMenuItems(
+                                sudokuItemClicked = sudokuBoxClicked,
                                 sudokuBoard = sudokuBoard,
                                 history = history
                             )
