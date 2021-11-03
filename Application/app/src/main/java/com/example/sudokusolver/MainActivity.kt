@@ -1,5 +1,6 @@
 package com.example.sudokusolver
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -38,7 +39,9 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize(),
                         verticalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Header()
+                        Header {
+                            HistoryIcon()
+                        }
                         SudokuBoard(
                             items = sudokuBoard,
                             verticalLength = verticalLength,
@@ -55,7 +58,15 @@ class MainActivity : ComponentActivity() {
                             handleActionMenuItems(
                                 sudokuItemClicked = sudokuBoxClicked,
                                 sudokuBoard = sudokuBoard,
-                                history = history
+                                history = history,
+                                startImageLoadingActivity = {
+                                    Intent(
+                                        applicationContext,
+                                        ImageLoadingActivity::class.java
+                                    ).also {
+                                        startActivity(it)
+                                    }
+                                }
                             )
                         )
                         BottomNumbers(handleClick = { numberClicked ->

@@ -1,5 +1,6 @@
 package com.example.sudokusolver
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -61,7 +62,8 @@ fun ActionMenu(actionMenuItems: List<ActionMenuItem>) {
 fun handleActionMenuItems(
     sudokuItemClicked: Int,
     sudokuBoard: SnapshotStateList<SudokuBoardItem>,
-    history: SnapshotStateList<HistoryItem>
+    history: SnapshotStateList<HistoryItem>,
+    startImageLoadingActivity: () -> Unit
 ): List<ActionMenuItem> {
     // TODO: Review icons used. Finding good icons is difficult...
     // See options: https://fonts.google.com/icons?selected=Material+Icons&icon.query=delete
@@ -89,7 +91,7 @@ fun handleActionMenuItems(
         ActionMenuItem(
             icon = Icons.Rounded.FileDownload,
             contentDescriptionResourceId = R.string.action_menu_icon_description_import,
-            handleClick = {},
+            handleClick = { startImageLoadingActivity() },
         ),
         ActionMenuItem(
             icon = Icons.Rounded.Calculate,
