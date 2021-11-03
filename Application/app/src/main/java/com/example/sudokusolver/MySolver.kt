@@ -1,5 +1,7 @@
 package com.example.sudokusolver
 
+import android.util.Log
+
 object GridModel {
 
     var status = false
@@ -27,15 +29,21 @@ object GridModel {
 
     fun PrintBoard() {
         grid.forEach() {
-            print(it.value.toString())
+            Log.i("Board: ", it.value.toString())
         }
     }
 
+    fun fill(list: List<Int>) {
+        grid.zip(list).forEach  {
+            it.first.value = it.second
+        }
+    }
 }
+
 
 class MySolver   {
     inner class GridBranch(
-        val selectedValue: Int,
+        val selectedValue: Int,     // new value we are testing on during traversal
         val gridCell: GridCell,
         val previous: GridBranch? = null
     ) {
@@ -63,14 +71,16 @@ class MySolver   {
         val isSolution = traverseBackwards.count() == 81 && constraintsMet
 
         fun applyToCell() {
-            gridCell.value = selectedValue
+            gridCell.value = selectedValue      // puts in value passed to it
         }
 
         init {
-            if (isContinuable) applyToCell()
+            if (isContinuable) applyToCell()    // always called
         }
     }
     fun solve() {
+
+        Log.i("Got here: ", "solve()")
 
         // Order Sudoku cells by count of how many candidate values they have left
         // Starting with the most constrained cells (with fewest possible values left) will greatly reduce the search space
@@ -85,6 +95,8 @@ class MySolver   {
             .toMap()
 
         // this is a recursive function for exploring nodes in a branch-and-bound tree
+        // for loop goes through one number and if a workable number is found, it called traverse on
+        // the next index
         fun traverse(index: Int, currentBranch: GridBranch): GridBranch? {
 
             val nextCell = sortedByCandidateCount[index+1]
@@ -96,6 +108,7 @@ class MySolver   {
             val range = if (fixedValue == null) (1..9) else (fixedValue..fixedValue)
 
             for (candidateValue in range) {
+                Log.i("Got into range loop: ", "solve() -> traverse()")
 
                 val nextBranch = GridBranch(candidateValue, nextCell, currentBranch)
 

@@ -24,6 +24,20 @@ class MainActivity : ComponentActivity( ) {
         }
 
         val board = GridModel
+        val newBoard = mutableListOf(   0,1,0,0,0,8,0,0,0,
+                                        0,0,0,0,0,0,0,0,0,
+                                        0,0,0,0,0,0,9,0,0,
+                                        0,0,0,0,0,0,0,0,0,
+                                        0,0,0,0,0,0,0,0,0,
+                                        0,0,0,0,0,0,0,0,0,
+                                        0,0,0,3,0,0,0,0,0,
+                                        0,0,0,0,0,0,4,0,0,
+                                        1,0,0,0,0,0,0,0,0,  )
+        // works!
+        board.fill(newBoard)
+        board.PrintBoard()
+        // not works!
+        board.solver.solve()
         board.PrintBoard()
         /*
         // Generates boards!
