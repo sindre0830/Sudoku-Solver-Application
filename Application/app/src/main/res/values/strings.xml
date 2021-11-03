@@ -7,4 +7,10 @@
     <string name="action_menu_icon_description_import">Import</string>
     <string name="action_menu_icon_description_solve">Solve</string>
     <string name="action_menu_icon_description_delete">Delete</string>
+    <string name="title_activity_image_loading">ImageLoadingActivity</string>
+    <string name="header_arrow_back_icon_description">Go back to previous activity</string>
+
+    <string name="image_loading_activity_icon_description_camera">Camera</string>
+    <string name="image_loading_activity_icon_description_gallery">Gallery</string>
+    <string name="image_loading_activity_icon_description_random">Random board</string>
 </resources>
