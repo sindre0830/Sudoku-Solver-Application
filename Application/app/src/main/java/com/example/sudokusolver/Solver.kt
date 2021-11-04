@@ -48,7 +48,7 @@ internal object Solver {
                     val availableDigits = getAvailableDigits(i, j)
                     for (k in availableDigits) {
                         grid[i][j] = k
-                        val temp = solve()
+                        //val temp = solve()
                         if (solve()) {
                             return true
                         }
@@ -80,7 +80,7 @@ internal object Solver {
     private fun truncateByDigitsAlreadyUsedInRow(board: Array<IntArray>, availableDigits: MutableSet<Int>, row: Int) {
         for (i in MIN_DIGIT_INDEX..MAX_DIGIT_INDEX) {
             if (board[row][i] != 0) {
-                availableDigits.remove(grid[row][i])
+                availableDigits.remove(board[row][i])
             }
         }
     }
@@ -88,7 +88,7 @@ internal object Solver {
     private fun truncateByDigitsAlreadyUsedInColumn(board: Array<IntArray>, availableDigits: MutableSet<Int>, column: Int) {
         for (i in MIN_DIGIT_INDEX..MAX_DIGIT_INDEX) {
             if (board[i][column] != 0) {
-                availableDigits.remove(grid[i][column])
+                availableDigits.remove(board[i][column])
             }
         }
     }
@@ -101,8 +101,8 @@ internal object Solver {
 
         for (i in rowStart until rowEnd) {
             for (j in columnStart until columnEnd) {
-                if (grid[i][j] != 0) {
-                    availableDigits.remove(grid[i][j])
+                if (board[i][j] != 0) {
+                    availableDigits.remove(board[i][j])
                 }
             }
         }

@@ -23,23 +23,27 @@ class MainActivity : ComponentActivity( ) {
             }
         }
 
+        // actual sudoku puzzle
+        val newBoard = mutableListOf(   5,3,0,0,7,8,0,0,0,
+                                        6,0,0,1,9,5,0,0,0,
+                                        0,9,8,0,0,0,0,6,0,
+                                        8,0,0,0,6,0,0,0,3,
+                                        4,0,0,8,0,3,0,0,1,
+                                        7,0,0,0,2,0,0,0,6,
+                                        0,6,0,0,0,0,2,8,0,
+                                        0,0,0,4,1,9,0,0,5,
+                                        0,0,0,0,8,0,0,7,9,  )
+        val test = dumbVer
+        test.fill(newBoard)
+        test.PrintBoard()
+        /*
         val board = GridModel
-        val newBoard = mutableListOf(   0,1,0,0,0,8,0,0,0,
-                                        0,0,0,0,0,0,0,0,0,
-                                        0,0,0,0,0,0,9,0,0,
-                                        0,0,0,0,0,0,0,0,0,
-                                        0,0,0,0,0,0,0,0,0,
-                                        0,0,0,0,0,0,0,0,0,
-                                        0,0,0,3,0,0,0,0,0,
-                                        0,0,0,0,0,0,4,0,0,
-                                        1,0,0,0,0,0,0,0,0,  )
         // works!
         board.fill(newBoard)
         board.PrintBoard()
         // not works!
         board.solver.solve()
-        board.PrintBoard()
-        /*
+
         // Generates boards!
         val board = Sudoku.Builder().setLevel(Level.MEDIUM).build()
         board.printGrid()

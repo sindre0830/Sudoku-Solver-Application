@@ -1,6 +1,7 @@
 package com.example.sudokusolver
 
 import android.util.Log
+import java.lang.Math.sqrt
 
 object GridModel {
 
@@ -33,6 +34,7 @@ object GridModel {
         }
     }
 
+    // Own function - fills grid from list we pass in
     fun fill(list: List<Int>) {
         grid.zip(list).forEach  {
             it.first.value = it.second
@@ -132,12 +134,15 @@ class MySolver   {
         // recursively traverse from the seed and get a solution
         val solution = traverse(0, seed)
 
-        // apply solution back to game baoard
-        solution?.traverseBackwards?.forEach { it.applyToCell() }
+        // apply solution back to game board
+        // solution is the same as original board here...not working
+        if(solution != null) {
+            solution?.traverseBackwards?.forEach { it.applyToCell(); Log.i("Board: ", it.gridCell.value.toString()) }
+
+        }
 
         GridModel.status = solution != null
     }
-
 }
 
 data class GridCell(val squareX: Int, val squareY: Int, val x: Int, val y: Int, var value: Int) {
@@ -168,5 +173,44 @@ data class GridCell(val squareX: Int, val squareY: Int, val x: Int, val y: Int, 
         nextValidValue?.let {
             value = nextValidValue as Int
         }
+    }
+}
+
+object dumbVer {
+    // solved?
+    var status = false
+    var cells = 81
+    var rows = 9
+    var columns = rows
+    var squareSides = sqrt(rows.toDouble()).toInt()
+
+    var grid = mutableListOf<Int>()
+    // Own function - fills grid from list we pass in
+    fun fill(list: List<Int>) {
+        if (list.count() == 81) {
+            grid = list.toMutableList()
+        }
+    }
+    fun PrintBoard() {
+        grid.forEach() {
+            Log.i("Board: ", it.toString())
+        }
+    }
+
+    fun solve(index: Int, board: List<Int>): Pair<List<Int>, Boolean> {
+        // Look at one cell
+        // exclude all numbers that are on the row/column/square
+        // create a new solve() for the next cell for every remaining viable number
+        // therefore we need cellindex and board
+        val indexValue = board.elementAt(index)
+        val range = if (indexValue == 0) (1..9) else (indexValue..indexValue)
+
+        for (candidateValue in range) {
+            // magic happens
+
+        }
+        // evaluate and
+        // fix up logic
+        return Pair(board, true)
     }
 }
