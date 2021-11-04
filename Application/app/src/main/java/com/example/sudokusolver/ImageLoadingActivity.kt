@@ -1,12 +1,15 @@
 package com.example.sudokusolver
 
+import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -28,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
+import kotlinx.coroutines.launch
 
 class ImageLoadingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,11 +52,7 @@ class ImageLoadingActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        ButtonWithIcon(
-                            onClick = {/*TODO: Launch Camera*/ },
-                            icon = Icons.Rounded.PhotoCamera,
-                            descriptionResourceId = R.string.image_loading_activity_icon_description_camera,
-                        )
+                        LaunchCameraBtn()
                         LoadImageFromGalleryBtn()
                         ButtonWithIcon(
                             onClick = { /*TODO: Load hardcoded/random board*/ },
@@ -124,7 +124,33 @@ fun LoadImageFromGalleryBtn() {
             )
         }
     }
+}
 
+@Composable
+fun LaunchCameraBtn() {
+    val (isPermissionGranted, setIsPermissionGranted) = remember {
+        mutableStateOf<Boolean?>(null)
+    }
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        setIsPermissionGranted(isGranted)
+    }
+
+    ButtonWithIcon(
+        onClick = {
+            when (isPermissionGranted) {
+                true -> context.startActivity(Intent(context, CameraActivity::class.java))
+                false -> { /*TODO: Handle permission denied */
+                }
+                null -> launcher.launch(Manifest.permission.CAMERA)
+            }
+
+        },
+        icon = Icons.Rounded.PhotoCamera,
+        descriptionResourceId = R.string.image_loading_activity_icon_description_camera,
+    )
 }
 
 fun imageUriToBitmap(context: Context, uri: Uri): Bitmap {

@@ -1,0 +1,237 @@
+package com.example.sudokusolver
+
+import android.Manifest
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.LinearLayout
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.*
+import androidx.camera.core.AspectRatio.RATIO_16_9
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
+import com.google.common.util.concurrent.ListenableFuture
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.example.sudokusolver.ui.theme.SudokuSolverTheme
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+
+class CameraActivity : ComponentActivity() {
+    private lateinit var outputDirectory: File
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        outputDirectory = getOutputDirectory()
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        setContent {
+            SudokuSolverTheme {
+                Surface(color = MaterialTheme.colors.background) {
+                    var (photoUri, setPhotoUri) = remember {
+                        mutableStateOf<Uri?>(null)
+                    }
+                    when (photoUri) {
+                        null -> CameraPreview(
+                            cameraProviderFuture = cameraProviderFuture,
+                            takePhoto = { imageCapture -> takePhoto(imageCapture, setPhotoUri) },
+                        )
+                        else -> DisplayPhoto(
+                            photoUri = photoUri,
+                            retakePhoto = { setPhotoUri(null) })
+                    }
+                }
+            }
+        }
+    }
+
+    private fun takePhoto(imageCapture: ImageCapture, setPhotoUri: (Uri) -> Unit) {
+        // Create time-stamped output file to hold the image
+        val photoFile = File(
+            outputDirectory,
+            SimpleDateFormat(
+                FILENAME_FORMAT, Locale.US
+            ).format(System.currentTimeMillis()) + ".jpg"
+        )
+
+        // Create output options object which contains file + metadata
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        // Set up image capture listener, which is triggered after photo has
+        // been taken
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exc: ImageCaptureException) {
+                    // TODO: Handle failure
+                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                }
+
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    val savedUri = Uri.fromFile(photoFile)
+                    Log.d(TAG, "Photo capture succeeded: $savedUri")
+                    setPhotoUri(savedUri)
+                }
+            })
+    }
+
+    private fun getOutputDirectory(): File {
+        val mediaDir = externalMediaDirs.firstOrNull()?.let {
+            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
+        }
+        return if (mediaDir != null && mediaDir.exists())
+            mediaDir else filesDir
+    }
+
+    companion object {
+        private const val TAG = "CameraXBasic"
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+    }
+}
+
+fun bindPreview(
+    cameraProvider: ProcessCameraProvider,
+    lifecycleOwner: LifecycleOwner,
+    previewView: PreviewView,
+    imageCapture: ImageCapture
+) {
+    val preview: Preview = Preview.Builder()
+        .setTargetAspectRatio(RATIO_16_9)
+        .build()
+
+    val cameraSelector: CameraSelector = CameraSelector.Builder()
+        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+        .build()
+
+    preview.setSurfaceProvider(previewView.surfaceProvider)
+
+    cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageCapture)
+}
+
+@Composable
+fun CameraPreview(
+    cameraProviderFuture: ListenableFuture<ProcessCameraProvider>,
+    takePhoto: (ImageCapture) -> Unit
+) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val imageCapture = ImageCapture.Builder()
+        .build()
+
+    AndroidView(
+        factory = { context ->
+            PreviewView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                scaleType = PreviewView.ScaleType.FILL_START
+                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                post {
+                    cameraProviderFuture.addListener(Runnable {
+                        val cameraProvider = cameraProviderFuture.get()
+                        bindPreview(
+                            cameraProvider,
+                            lifecycleOwner,
+                            this,
+                            imageCapture
+                        )
+                    }, ContextCompat.getMainExecutor(context))
+                }
+            }
+        }
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 30.dp),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(
+            onClick = { takePhoto(imageCapture) },
+        ) {
+            Text(text = "Capture Photo")
+        }
+    }
+
+
+}
+
+
+@Composable
+private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
+    val bitmap = remember {
+        mutableStateOf<Bitmap?>(null)
+    }
+    val context = LocalContext.current
+
+    bitmap.value = imageUriToBitmap(context, photoUri)
+
+    bitmap.value?.let { btm ->
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                bitmap = btm.asImageBitmap(),
+                contentDescription = null,
+                modifier = Modifier.weight(4f)
+            )
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(0.5f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+
+            ) {
+                Button(
+                    onClick = { retakePhoto() },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(
+                        Icons.Rounded.Replay,
+                        stringResource(id = R.string.display_photo_icon_description_retake_photo)
+                    )
+                }
+                Spacer(modifier = Modifier.padding(15.dp))
+                Button(
+                    onClick = { /*TODO: Handle processing of image*/ },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(
+                        Icons.Rounded.Done,
+                        stringResource(id = R.string.display_photo_icon_description_accept)
+                    )
+                }
+
+            }
+        }
+    }
+}
