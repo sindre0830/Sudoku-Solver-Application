@@ -197,20 +197,107 @@ object dumbVer {
         }
     }
 
-    fun solve(index: Int, board: List<Int>): Pair<List<Int>, Boolean> {
+    fun solve(index: Int, board: MutableList<Int>): Pair<MutableList<Int>, Boolean> {
         // Look at one cell
         // exclude all numbers that are on the row/column/square
         // create a new solve() for the next cell for every remaining viable number
         // therefore we need cellindex and board
-        val indexValue = board.elementAt(index)
-        val range = if (indexValue == 0) (1..9) else (indexValue..indexValue)
-
+                //remove unusable values
+        val range = removeUsedValues(index, board)
+        // check if we got a good board
+        var result = Pair<MutableList<Int>, Boolean>(board, false)
+        var newBoard = board
         for (candidateValue in range) {
-            // magic happens
-
+            newBoard.set(index, candidateValue)
+            var temp = solve(index+1, newBoard)
+            if(temp.second == true) {
+                result = temp
+            }
         }
-        // evaluate and
-        // fix up logic
-        return Pair(board, true)
+
+        // does not update if board is unsolvable!!
+        return result
+    }
+    fun removeUsedValues(index: Int, board: List<Int>): List<Int> {
+        var noRow = removeRow(index, board)
+        var noCol = removeCol(noRow, index, board)
+        var noSquare = removeSquare(noCol, index, board)
+
+        return noSquare
+    }
+
+    // should work
+    fun removeRow(index: Int, board: List<Int>): MutableList<Int> {
+        var indexes: MutableList<Int>
+        indexes = getRowIndex(index)
+
+        var newRange: MutableList<Int> = (1..9).toMutableList()
+
+        indexes.forEach {
+            if (board.indexOf(it) != 0) {
+                newRange.remove(board.indexOf(it))
+            }
+        }
+        return newRange
+    }
+
+    fun removeCol (range: MutableList<Int>, index: Int, board: List<Int>): MutableList<Int> {
+        var indexes: MutableList<Int>
+        indexes = getColIndex(index)
+
+        var newRange: MutableList<Int> = range
+
+        indexes.forEach {
+            if (board.indexOf(it) != 0) {
+                newRange.remove(board.indexOf(it))
+            }
+        }
+        return newRange
+    }
+
+    fun removeSquare (range: MutableList<Int>, index: Int, board: List<Int>): MutableList<Int> {
+        var indexes: MutableList<Int>
+        indexes = getSquareIndex(index)
+
+        var newRange: MutableList<Int> = range
+
+        indexes.forEach {
+            if (board.indexOf(it) != 0) {
+                newRange.remove(board.indexOf(it))
+            }
+        }
+        return newRange
+    }
+
+
+    // works!
+    fun getRowIndex(index: Int): MutableList<Int> {
+        var row = mutableListOf<Int>()
+        var start = index / rows
+
+        for (i in 0..(rows-1)) {
+            row.add(i + 1 + (rows * start))
+        }
+        return row
+    }
+    // works!
+    fun getColIndex(index: Int): MutableList<Int> {
+        var col = mutableListOf<Int>()
+        var remainder = index%rows
+        for (i in 0..(columns-1)) {
+            col.add(remainder + columns*i)
+        }
+        return col
+    }
+    fun getSquareIndex(index: Int): MutableList<Int> {
+        var square = mutableListOf<Int>()
+        var squareCol = 1 + (index % columns) / squareSides // 1 - 3
+        var squareRow = 1 + (index / rows) / squareSides // 1 - 3
+        for(i in 1..(squareSides)) {
+            for (j in 1..(squareSides)) {
+                // it's breakin mah brain!
+            }
+        }
+        return square
     }
 }

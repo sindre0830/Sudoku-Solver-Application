@@ -35,7 +35,9 @@ class MainActivity : ComponentActivity( ) {
                                         0,0,0,0,8,0,0,7,9,  )
         val test = dumbVer
         test.fill(newBoard)
-        test.PrintBoard()
+        //test.PrintBoard()
+
+
         /*
         val board = GridModel
         // works!
