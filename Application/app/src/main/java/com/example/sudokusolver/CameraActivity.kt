@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -53,37 +54,60 @@ class CameraActivity : ComponentActivity() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         setContent {
+            val scaffoldState = rememberScaffoldState()
+            val snackbarCoroutineScope = rememberCoroutineScope()
+            val (photoUri, setPhotoUri) = remember {
+                mutableStateOf<Uri?>(null)
+            }
+
             SudokuSolverTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    val (photoUri, setPhotoUri) = remember {
-                        mutableStateOf<Uri?>(null)
-                    }
-                    when (photoUri) {
-                        null -> CameraPreview(
-                            cameraProviderFuture = cameraProviderFuture,
-                            takePhoto = { imageCapture -> takePhoto(imageCapture, setPhotoUri) },
-                        )
-                        else -> DisplayPhoto(
-                            photoUri = photoUri,
-                            retakePhoto = {
-                                // When retake function is executed we don't add the activity on the backstack
-                                // by setting the flag FLAG_ACTIVITY_NO_HISTORY.
-                                // This is done to provider better use experience if the person
-                                // is clicking the back button on their phone.
-                                startActivity(
-                                    Intent(
-                                        this,
-                                        CameraActivity::class.java
-                                    ).setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-                                )
-                            })
+                    Scaffold(
+                        scaffoldState = scaffoldState,
+                    ) {
+                        when (photoUri) {
+                            null -> CameraPreview(
+                                cameraProviderFuture = cameraProviderFuture,
+                                takePhoto = { imageCapture ->
+                                    takePhoto(
+                                        imageCapture = imageCapture,
+                                        setPhotoUri = setPhotoUri,
+                                        displaySnackbar = { msg ->
+                                            snackbarCoroutineScope.launch {
+                                                scaffoldState.snackbarHostState.showSnackbar(
+                                                    message = msg,
+                                                )
+                                            }
+                                        }
+                                    )
+                                },
+                            )
+                            else -> DisplayPhoto(
+                                photoUri = photoUri,
+                                retakePhoto = {
+                                    // When retake function is executed we don't add the activity on the backstack
+                                    // by setting the flag FLAG_ACTIVITY_NO_HISTORY.
+                                    // This is done to provide better user experience when the user
+                                    // is clicking the back button on their phone.
+                                    startActivity(
+                                        Intent(
+                                            this,
+                                            CameraActivity::class.java
+                                        ).setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+                                    )
+                                })
+                        }
                     }
                 }
             }
         }
     }
 
-    private fun takePhoto(imageCapture: ImageCapture, setPhotoUri: (Uri) -> Unit) {
+    private fun takePhoto(
+        imageCapture: ImageCapture,
+        setPhotoUri: (Uri) -> Unit,
+        displaySnackbar: (message: String) -> Unit
+    ) {
         // Create time-stamped output file to hold the image
         val photoFile = File(
             outputDirectory,
@@ -101,9 +125,8 @@ class CameraActivity : ComponentActivity() {
             outputOptions,
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    // TODO: Handle failure
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                override fun onError(e: ImageCaptureException) {
+                    displaySnackbar("Photo capture failed: ${e.message}")
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {

@@ -33,9 +33,11 @@ fun mockBoard(verticalLength: Int): MutableList<Int> {
 fun SudokuBoard(
     items: List<SudokuBoardItem>,
     verticalLength: Int,
-    onItemClick: (index: Int) -> Unit
+    onItemClick: (index: Int) -> Unit,
 ) {
     validateBoard(items.map { it.number }, verticalLength)
+
+
     var currentItem = 0
 
     Column {
@@ -52,11 +54,9 @@ fun SudokuBoard(
             }
         }
     }
-
 }
 
-
-// TODO: figure out a nice way to handle error and display them to user
+// TODO: How to handle error messages
 fun validateBoard(items: List<Int>, verticalLength: Int) {
     if (verticalLength == 0) {
         throw Error("board length cannot be 0")
@@ -87,7 +87,6 @@ fun RowScope.SudokuBoxItem(
     Box(
         modifier = Modifier
             .border(
-                // TODO: fix color on different modes https://developer.android.com/jetpack/compose/themes/material
                 border = BorderStroke(1.dp, MaterialTheme.colors.onBackground),
                 shape = RectangleShape
             )

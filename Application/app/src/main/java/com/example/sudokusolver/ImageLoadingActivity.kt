@@ -37,28 +37,42 @@ class ImageLoadingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val scaffoldState = rememberScaffoldState()
+            val snackbarCoroutineScope = rememberCoroutineScope()
             SudokuSolverTheme {
                 Surface(
                     color = MaterialTheme.colors.background,
                     modifier = Modifier.padding(10.dp)
                 ) {
-                    Header {
-                        ArrowBackIcon(
-                            modifier = Modifier.clickable { finish() }
-                        )
-                    }
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
+                    Scaffold(
+                        scaffoldState = scaffoldState,
                     ) {
-                        LaunchCameraBtn()
-                        LoadImageFromGalleryBtn()
-                        ButtonWithIcon(
-                            onClick = { /*TODO: Load hardcoded/random board*/ },
-                            icon = Icons.Rounded.Casino,
-                            descriptionResourceId = R.string.image_loading_activity_icon_description_random,
-                        )
+                        Header {
+                            ArrowBackIcon(
+                                modifier = Modifier.clickable { finish() }
+                            )
+                        }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            LaunchCameraBtn(
+                                displaySnackbar = { msg ->
+                                    snackbarCoroutineScope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            message = msg,
+                                        )
+                                    }
+                                }
+                            )
+                            LoadImageFromGalleryBtn()
+                            ButtonWithIcon(
+                                onClick = { /*TODO: Load hardcoded/random board*/ },
+                                icon = Icons.Rounded.Casino,
+                                descriptionResourceId = R.string.image_loading_activity_icon_description_random,
+                            )
+                        }
                     }
                 }
             }
@@ -127,15 +141,16 @@ fun LoadImageFromGalleryBtn() {
 }
 
 @Composable
-fun LaunchCameraBtn() {
+fun LaunchCameraBtn(
+    displaySnackbar: (message: String) -> Unit
+) {
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         when (isGranted) {
             true -> context.startActivity(Intent(context, CameraActivity::class.java))
-            false -> { /*TODO: Handle permission denied */
-            }
+            false -> displaySnackbar("Camera permission is required for importing with photo")
         }
     }
 
@@ -144,6 +159,7 @@ fun LaunchCameraBtn() {
         icon = Icons.Rounded.PhotoCamera,
         descriptionResourceId = R.string.image_loading_activity_icon_description_camera,
     )
+
 }
 
 fun imageUriToBitmap(context: Context, uri: Uri): Bitmap {
