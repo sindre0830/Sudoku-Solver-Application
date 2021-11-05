@@ -1,12 +1,15 @@
 package com.example.sudokusolver
 
+import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -28,37 +31,48 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
+import kotlinx.coroutines.launch
 
 class ImageLoadingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val scaffoldState = rememberScaffoldState()
+            val snackbarCoroutineScope = rememberCoroutineScope()
             SudokuSolverTheme {
                 Surface(
                     color = MaterialTheme.colors.background,
                     modifier = Modifier.padding(10.dp)
                 ) {
-                    Header {
-                        ArrowBackIcon(
-                            modifier = Modifier.clickable { finish() }
-                        )
-                    }
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
+                    Scaffold(
+                        scaffoldState = scaffoldState,
                     ) {
-                        ButtonWithIcon(
-                            onClick = {/*TODO: Launch Camera*/ },
-                            icon = Icons.Rounded.PhotoCamera,
-                            descriptionResourceId = R.string.image_loading_activity_icon_description_camera,
-                        )
-                        LoadImageFromGalleryBtn()
-                        ButtonWithIcon(
-                            onClick = { /*TODO: Load hardcoded/random board*/ },
-                            icon = Icons.Rounded.Casino,
-                            descriptionResourceId = R.string.image_loading_activity_icon_description_random,
-                        )
+                        Header {
+                            ArrowBackIcon(
+                                modifier = Modifier.clickable { finish() }
+                            )
+                        }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            LaunchCameraBtn(
+                                displaySnackbar = { msg ->
+                                    snackbarCoroutineScope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar(
+                                            message = msg,
+                                        )
+                                    }
+                                }
+                            )
+                            LoadImageFromGalleryBtn()
+                            ButtonWithIcon(
+                                onClick = { /*TODO: Load hardcoded/random board*/ },
+                                icon = Icons.Rounded.Casino,
+                                descriptionResourceId = R.string.image_loading_activity_icon_description_random,
+                            )
+                        }
                     }
                 }
             }
@@ -124,6 +138,27 @@ fun LoadImageFromGalleryBtn() {
             )
         }
     }
+}
+
+@Composable
+fun LaunchCameraBtn(
+    displaySnackbar: (message: String) -> Unit
+) {
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        when (isGranted) {
+            true -> context.startActivity(Intent(context, CameraActivity::class.java))
+            false -> displaySnackbar("Camera permission is required for importing with photo")
+        }
+    }
+
+    ButtonWithIcon(
+        onClick = { launcher.launch(Manifest.permission.CAMERA) },
+        icon = Icons.Rounded.PhotoCamera,
+        descriptionResourceId = R.string.image_loading_activity_icon_description_camera,
+    )
 
 }
 
