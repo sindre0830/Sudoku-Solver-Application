@@ -128,26 +128,19 @@ fun LoadImageFromGalleryBtn() {
 
 @Composable
 fun LaunchCameraBtn() {
-    val (isPermissionGranted, setIsPermissionGranted) = remember {
-        mutableStateOf<Boolean?>(null)
-    }
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        setIsPermissionGranted(isGranted)
+        when (isGranted) {
+            true -> context.startActivity(Intent(context, CameraActivity::class.java))
+            false -> { /*TODO: Handle permission denied */
+            }
+        }
     }
 
     ButtonWithIcon(
-        onClick = {
-            when (isPermissionGranted) {
-                true -> context.startActivity(Intent(context, CameraActivity::class.java))
-                false -> { /*TODO: Handle permission denied */
-                }
-                null -> launcher.launch(Manifest.permission.CAMERA)
-            }
-
-        },
+        onClick = { launcher.launch(Manifest.permission.CAMERA) },
         icon = Icons.Rounded.PhotoCamera,
         descriptionResourceId = R.string.image_loading_activity_icon_description_camera,
     )

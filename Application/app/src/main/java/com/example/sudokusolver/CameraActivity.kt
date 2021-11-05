@@ -1,6 +1,7 @@
 package com.example.sudokusolver
 
 import android.Manifest
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
@@ -54,7 +55,7 @@ class CameraActivity : ComponentActivity() {
         setContent {
             SudokuSolverTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    var (photoUri, setPhotoUri) = remember {
+                    val (photoUri, setPhotoUri) = remember {
                         mutableStateOf<Uri?>(null)
                     }
                     when (photoUri) {
@@ -64,7 +65,18 @@ class CameraActivity : ComponentActivity() {
                         )
                         else -> DisplayPhoto(
                             photoUri = photoUri,
-                            retakePhoto = { setPhotoUri(null) })
+                            retakePhoto = {
+                                // When retake function is executed we don't add the activity on the backstack
+                                // by setting the flag FLAG_ACTIVITY_NO_HISTORY.
+                                // This is done to provider better use experience if the person
+                                // is clicking the back button on their phone.
+                                startActivity(
+                                    Intent(
+                                        this,
+                                        CameraActivity::class.java
+                                    ).setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+                                )
+                            })
                     }
                 }
             }
