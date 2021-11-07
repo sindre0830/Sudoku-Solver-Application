@@ -28,6 +28,16 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         return this.originalImage.clone()
     }
 
+    private fun generateBuffer(matrix: Mat): Mat {
+        //because of objects being references in Kotlin and OpenCV semantics, I have
+        //added a quick switch and release function this allows me to keep the original
+        //matrix instead of creating a lot of new matrices after each Opencv function
+        val bufferMatrix = Mat()
+        matrix.copyTo(bufferMatrix)
+        matrix.release()
+        return bufferMatrix
+    }
+
     fun setImageFromResource(resource: Int) {
         this.originalImage.release()
         this.originalImage = Utils.loadResource(context, resource, Imgcodecs.IMREAD_COLOR + Imgcodecs.IMREAD_IGNORE_ORIENTATION)
