@@ -24,6 +24,10 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         return OpenCVLoader.initDebug()
     }
 
+    private fun getOriginalImage(): Mat {
+        return this.originalImage.clone()
+    }
+
     fun setImageFromResource(resource: Int) {
         this.originalImage.release()
         this.originalImage = Utils.loadResource(context, resource, Imgcodecs.IMREAD_COLOR + Imgcodecs.IMREAD_IGNORE_ORIENTATION)
