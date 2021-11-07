@@ -24,7 +24,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         }
         //perform preprocessing
         extractBoard()
-        val cellPositions = getCellPositionsByGrid()
+        val cellPositions = getCellPositionsByContours()
     }
 
     private fun loadOpenCV(): Boolean {
@@ -167,6 +167,44 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             Size(width.toDouble(), height.toDouble())
         )
         bufferMatrix.release()
+    }
+
+    private fun getCellPositionsByContours(): List<Rect> {
+        //perform preprocessing of image
+        val boardImage = getBoardMatrix()
+        convertToGrayscale(boardImage)
+        performAdaptiveThresholding(boardImage, 11, 2.0)
+        performBitwiseNot(boardImage)
+        performDilation(boardImage)
+        //iterate through contours and store their positions if they are within acceptable cell area
+        val cellWidth = boardImage.width() / 9
+        val cellHeight = boardImage.height() / 9
+        val threshold = 1.10
+        val contours = getContours(boardImage, Imgproc.RETR_LIST)
+        val cellAreas = mutableListOf<Rect>()
+        for (i in contours.indices) {
+            val cellArea = Imgproc.boundingRect(contours[i])
+            if (cellArea.width <= cellWidth * threshold && cellArea.height <= cellHeight * threshold) {
+                cellAreas.add(cellArea)
+            }
+        }
+        //only keep the contours with the largest areas (presumably the cells)
+        cellAreas.sortByDescending { it.area() }
+        cellAreas.subList(81, cellAreas.size).clear()
+        //sort cell areas by y position and iterate through list to sort them by their respected position on the board
+        cellAreas.sortBy { it.y }
+        for (row in 0..8) {
+            val cellAreasBuffer = mutableListOf<Rect>()
+            for (col in 0..8) {
+                cellAreasBuffer.add(cellAreas[row * 9 + col])
+            }
+            cellAreasBuffer.sortBy { it.x }
+            for (col in 0..8) {
+                cellAreas[row * 9 + col] = cellAreasBuffer[col]
+            }
+        }
+        boardImage.release()
+        return cellAreas
     }
 
     private fun getCellPositionsByGrid(): List<Rect> {
