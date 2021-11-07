@@ -24,6 +24,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         }
         //perform preprocessing
         extractBoard()
+        val cellPositions = getCellPositionsByContours()
     }
 
     private fun loadOpenCV(): Boolean {
@@ -50,6 +51,10 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
 
     private fun getOriginalImage(): Mat {
         return this.originalImage.clone()
+    }
+
+    private fun getBoardMatrix(): Mat {
+        return this.boardMatrix.clone()
     }
 
     private fun convertToGrayscale(matrix: Mat) {
@@ -162,6 +167,59 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             Size(width.toDouble(), height.toDouble())
         )
         bufferMatrix.release()
+    }
+
+    private fun getCellPositionsByContours(): List<Rect> {
+        //perform preprocessing of image
+        val boardImage = getBoardMatrix()
+        convertToGrayscale(boardImage)
+        performAdaptiveThresholding(boardImage, 11, 2.0)
+        performBitwiseNot(boardImage)
+        performDilation(boardImage)
+        //iterate through contours and store their positions if they are within acceptable cell area
+        val cellWidth = boardImage.width() / 9
+        val cellHeight = boardImage.height() / 9
+        val threshold = 1.10
+        val contours = getContours(boardImage, Imgproc.RETR_LIST)
+        val cellAreas = mutableListOf<Rect>()
+        for (i in contours.indices) {
+            val cellArea = Imgproc.boundingRect(contours[i])
+            if (cellArea.width <= cellWidth * threshold && cellArea.height <= cellHeight * threshold) {
+                cellAreas.add(cellArea)
+            }
+        }
+        //only keep the contours with the largest areas (presumably the cells)
+        cellAreas.sortByDescending { it.area() }
+        cellAreas.subList(81, cellAreas.size).clear()
+        //sort cell areas by y position and iterate through list to sort them by their respected position on the board
+        cellAreas.sortBy { it.y }
+        for (row in 0..8) {
+            val cellAreasBuffer = mutableListOf<Rect>()
+            for (col in 0..8) {
+                cellAreasBuffer.add(cellAreas[row * 9 + col])
+            }
+            cellAreasBuffer.sortBy { it.x }
+            for (col in 0..8) {
+                cellAreas[row * 9 + col] = cellAreasBuffer[col]
+            }
+        }
+        boardImage.release()
+        return cellAreas
+    }
+
+    private fun getCellPositionsByGrid(): List<Rect> {
+        //iterate through each cell in the board and crop the matrix
+        val boardHeight = this.boardMatrix.height()
+        val boardWidth = this.boardMatrix.width()
+        val cellHeight = boardHeight / 9
+        val cellWidth = boardWidth / 9
+        val cells = mutableListOf<Rect>()
+        for (y in 0 until (boardHeight - cellHeight) step cellHeight) {
+            for (x in 0 until (boardWidth - cellWidth) step cellWidth) {
+                cells.add(Rect(Point(x.toDouble(), y.toDouble()), Point((x + cellWidth).toDouble(),(y + cellHeight).toDouble())))
+            }
+        }
+        return cells
     }
 
     private fun setBoardMatrix(matrix: Mat) {
