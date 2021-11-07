@@ -3,18 +3,28 @@ package com.example.sudokusolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import com.example.sudokusolver.ml.Model
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 class SudokuBoardRecognizer constructor(private val context: Context) {
     private var dependenciesLoaded = loadOpenCV()
+    private lateinit var model: Model
     private var originalImage = Mat()
     private var boardMatrix = Mat()
+    private val imageSize = Size(28.0, 28.0)
+    private val inputBuffer = ByteBuffer.allocateDirect(4 * imageSize.width.toInt() * imageSize.height.toInt()).apply { order(ByteOrder.nativeOrder()) }
+    //generate list of 81 zeros representing an empty board
+    var predictionOutput = MutableList(81) { 0 }
 
     fun execute() {
         //check if dependencies has been loaded
@@ -22,9 +32,14 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             Log.e("OpenCV", "OpenCV failed to load and is preventing image recognition")
             return
         }
+        //initialize Tensorflow Lite model
+        model = Model.newInstance(context)
         //perform preprocessing
         extractBoard()
         val cellPositions = getCellPositionsByContours()
+        computePredictionsOnCells(cellPositions)
+        //clean up
+        model.close()
     }
 
     private fun loadOpenCV(): Boolean {
@@ -220,6 +235,130 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             }
         }
         return cells
+    }
+
+    private fun computePredictionsOnCells(cellPositions: List<Rect>) {
+        //perform preprocessing of image
+        val matrix = getBoardMatrix()
+        convertToGrayscale(matrix)
+        performBitwiseNot(matrix)
+        performThresholding(matrix, 130.0)
+        //iterate through each cell and predict if there is a digit inside
+        for (cellIndex in cellPositions.indices) {
+            val cell = extractAreaFromMatrix(matrix, cellPositions[cellIndex])
+            val contours = getContours(cell, Imgproc.RETR_CCOMP)
+            var index = -1
+            //iterate through contours in cell and break at first contour area that could be digit
+            for (i in contours.indices) {
+                val area = Imgproc.boundingRect(contours[i])
+                if (!(area.x < 4 || area.y < 4 || area.height < 4 || area.width < 4)) {
+                    index = i
+                    break
+                }
+            }
+            //branch if digit was found in cell and predict
+            if (index >= 0) {
+                //get digit and adjust ROI
+                val digit = extractAreaFromMatrix(cell, Imgproc.boundingRect(contours[index]))
+                performAdjustROI(digit)
+                //perform preprocessing of image
+                resizeMatrix(digit, imageSize.width, imageSize.height)
+                performThresholding(digit, 160.0)
+                normalizeMatrix(digit)
+                //predict on digit
+                predictionOutput[cellIndex] = predictCell(digit, model)
+            }
+        }
+        matrix.release()
+    }
+
+    private fun performThresholding(matrix: Mat, thresh: Double) {
+        val bufferMatrix = generateBuffer(matrix)
+        Imgproc.threshold(bufferMatrix, matrix, thresh, 255.0, Imgproc.THRESH_BINARY)
+        bufferMatrix.release()
+    }
+
+    private fun extractAreaFromMatrix(matrix: Mat, cellCoordinates: Rect): Mat {
+        //create a sub matrix by area
+        val cellX = cellCoordinates.x.toDouble()
+        val cellY = cellCoordinates.y.toDouble()
+        val cellWidth = cellCoordinates.width.toDouble()
+        val cellHeight = cellCoordinates.height.toDouble()
+        return matrix.submat(Rect(Point(cellX, cellY), Point(cellX + cellWidth, cellY + cellHeight)))
+    }
+
+    private fun performAdjustROI(matrix: Mat) {
+        //resizes matrix by adding margin on each side and adding rows or columns where needed
+        //this makes resizing a lot better since it's already a square
+        var top = 2
+        var bottom = 2
+        var left = 2
+        var right = 2
+        if (matrix.width() < matrix.height()) {
+            var diff = matrix.height() - matrix.width()
+            if (diff.mod(2) != 0) {
+                diff = (diff + 1) / 2
+                left += diff - 1
+                right += diff
+            } else {
+                diff /= 2
+                left += diff
+                right += diff
+            }
+        } else if (matrix.width() > matrix.height()) {
+            var diff = matrix.width() - matrix.height()
+            if (diff.mod(2) != 0) {
+                diff = (diff + 1) / 2
+                top += diff - 1
+                bottom += diff
+            } else {
+                diff /= 2
+                top += diff
+                bottom += diff
+            }
+        }
+        matrix.adjustROI(top, bottom, left, right)
+    }
+
+    private fun resizeMatrix(matrix: Mat, width: Double, height: Double) {
+        var method = Imgproc.INTER_CUBIC.toDouble()
+        if (matrix.width() > width || matrix.height() > height) method = Imgproc.INTER_AREA.toDouble()
+        val bufferMatrix = generateBuffer(matrix)
+        Imgproc.resize(bufferMatrix, matrix, Size(width, height), method)
+        bufferMatrix.release()
+    }
+
+    private fun normalizeMatrix(matrix: Mat) {
+        val bufferMatrix = generateBuffer(matrix)
+        Core.normalize(bufferMatrix, matrix, 1.0, 0.0, Core.NORM_MINMAX)
+        bufferMatrix.release()
+    }
+
+    private fun predictCell(cell: Mat, model: Model): Int {
+        //convert matrix to bytebuffer
+        inputBuffer.rewind()
+        for (i in 0 until imageSize.height.toInt()) {
+            for (j in 0 until imageSize.width.toInt()) {
+                inputBuffer.putFloat(cell.get(i, j)[0].toFloat())
+            }
+        }
+        //input buffer to model
+        val input = TensorBuffer.createFixedSize(intArrayOf(1, imageSize.width.toInt(), imageSize.height.toInt(), 1), DataType.FLOAT32)
+        input.loadBuffer(inputBuffer)
+        //output new buffer from model
+        val outputBuffer = model.process(input)
+        val output = outputBuffer.outputFeature0AsTensorBuffer
+        //get the index (label) of the highest accuracy
+        val predictions = output.floatArray
+        var highestAccuracy = 0.0F
+        var prediction = 0
+        for (i in predictions.indices) {
+            if (predictions[i] > highestAccuracy) {
+                highestAccuracy = predictions[i]
+                prediction = i
+            }
+        }
+        return prediction
     }
 
     private fun setBoardMatrix(matrix: Mat) {
