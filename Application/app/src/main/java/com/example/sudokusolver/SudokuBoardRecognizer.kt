@@ -14,6 +14,7 @@ import kotlin.math.sqrt
 class SudokuBoardRecognizer constructor(private val context: Context) {
     private var dependenciesLoaded = loadOpenCV()
     private var originalImage = Mat()
+    private var boardMatrix = Mat()
 
     fun execute() {
         //check if dependencies has been loaded
@@ -42,6 +43,9 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //crop and warp the sudoku board
         val boardImage = getOriginalImage()
         focusOnBoard(boardImage, boardCoordinates)
+        setBoardMatrix(boardImage)
+        fullImage.release()
+        boardImage.release()
     }
 
     private fun getOriginalImage(): Mat {
@@ -158,6 +162,11 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             Size(width.toDouble(), height.toDouble())
         )
         bufferMatrix.release()
+    }
+
+    private fun setBoardMatrix(matrix: Mat) {
+        this.boardMatrix.release()
+        matrix.copyTo(this.boardMatrix)
     }
 
     private fun generateBuffer(matrix: Mat): Mat {
