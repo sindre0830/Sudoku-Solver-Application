@@ -33,6 +33,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //perform preprocessing of image
         convertToGrayscale(fullImage)
         performGaussianBlur(fullImage)
+        performAdaptiveThresholding(fullImage, 11, 2.0)
     }
 
     private fun getOriginalImage(): Mat {
@@ -48,6 +49,20 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private fun performGaussianBlur(matrix: Mat) {
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.GaussianBlur(bufferMatrix, matrix, Size(9.0, 9.0), 0.0)
+        bufferMatrix.release()
+    }
+
+    private fun performAdaptiveThresholding(matrix: Mat, blockSize: Int, constSubtraction: Double) {
+        val bufferMatrix = generateBuffer(matrix)
+        Imgproc.adaptiveThreshold(
+            bufferMatrix,
+            matrix,
+            255.0,
+            Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,
+            Imgproc.THRESH_BINARY,
+            blockSize,
+            constSubtraction
+        )
         bufferMatrix.release()
     }
 
