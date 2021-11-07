@@ -53,6 +53,10 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         return this.originalImage.clone()
     }
 
+    private fun getBoardMatrix(): Mat {
+        return this.boardMatrix.clone()
+    }
+
     private fun convertToGrayscale(matrix: Mat) {
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.cvtColor(bufferMatrix, matrix, Imgproc.COLOR_BGR2GRAY)
