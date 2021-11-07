@@ -29,6 +29,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //perform preprocessing
         extractBoard()
         val cellPositions = getCellPositionsByContours()
+        computePredictionsOnCells(cellPositions)
         //clean up
         model.close()
     }
@@ -226,6 +227,20 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             }
         }
         return cells
+    }
+
+    private fun computePredictionsOnCells(cellPositions: List<Rect>) {
+        //perform preprocessing of image
+        val matrix = getBoardMatrix()
+        convertToGrayscale(matrix)
+        performBitwiseNot(matrix)
+        performThresholding(matrix, 130.0)
+    }
+
+    private fun performThresholding(matrix: Mat, thresh: Double) {
+        val bufferMatrix = generateBuffer(matrix)
+        Imgproc.threshold(bufferMatrix, matrix, thresh, 255.0, Imgproc.THRESH_BINARY)
+        bufferMatrix.release()
     }
 
     private fun setBoardMatrix(matrix: Mat) {
