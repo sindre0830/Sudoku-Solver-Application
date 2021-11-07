@@ -5,10 +5,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
-import org.opencv.core.Core
-import org.opencv.core.CvType
-import org.opencv.core.Mat
-import org.opencv.core.Size
+import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 
@@ -84,6 +81,14 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.dilate(bufferMatrix, matrix, kernel)
         bufferMatrix.release()
+    }
+
+    private fun getContours(matrix: Mat, mode: Int): List<MatOfPoint> {
+        val contours = mutableListOf<MatOfPoint>()
+        val hierarchy = Mat()
+        Imgproc.findContours(matrix, contours, hierarchy, mode, Imgproc.CHAIN_APPROX_SIMPLE)
+        hierarchy.release()
+        return contours
     }
 
     private fun generateBuffer(matrix: Mat): Mat {
