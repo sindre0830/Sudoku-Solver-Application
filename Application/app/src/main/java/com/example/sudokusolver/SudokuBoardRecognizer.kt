@@ -8,6 +8,8 @@ import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class SudokuBoardRecognizer constructor(private val context: Context) {
     private var dependenciesLoaded = loadOpenCV()
@@ -37,6 +39,9 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         performDilation(fullImage)
         //get board area in the image (finds largest rectangle in the image)
         val boardCoordinates = findBoardCoordinates(fullImage)
+        //crop and warp the sudoku board
+        val boardImage = getOriginalImage()
+        focusOnBoard(boardImage, boardCoordinates)
     }
 
     private fun getOriginalImage(): Mat {
@@ -120,6 +125,39 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         Imgproc.findContours(matrix, contours, hierarchy, mode, Imgproc.CHAIN_APPROX_SIMPLE)
         hierarchy.release()
         return contours
+    }
+
+    private fun focusOnBoard(matrix: Mat, boardCoordinates: BoardCoordinates) {
+        //get width of board
+        val widthBottom = sqrt((boardCoordinates.bottomRight.x - boardCoordinates.bottomLeft.x).pow(2) + (boardCoordinates.bottomRight.y - boardCoordinates.bottomLeft.y).pow(2))
+        val widthTop = sqrt((boardCoordinates.topRight.x - boardCoordinates.topLeft.x).pow(2) + (boardCoordinates.topRight.y - boardCoordinates.topLeft.y).pow(2))
+        val width = kotlin.math.max(widthBottom.toInt(), widthTop.toInt())
+        //get height of board
+        val heightRight = sqrt((boardCoordinates.topRight.x - boardCoordinates.bottomRight.x).pow(2) + (boardCoordinates.topRight.y - boardCoordinates.bottomRight.y).pow(2))
+        val heightLeft = sqrt((boardCoordinates.topLeft.x - boardCoordinates.bottomLeft.x).pow(2) + (boardCoordinates.topLeft.y - boardCoordinates.bottomLeft.y).pow(2))
+        val height = kotlin.math.max(heightRight.toInt(), heightLeft.toInt())
+        //get dimensions of board
+        val dimensions = Mat.zeros(4, 2, CvType.CV_32F)
+        dimensions.put(0, 0, floatArrayOf(0.0F, 0.0F))
+        dimensions.put(1, 0, floatArrayOf(width - 1.0F, 0.0F))
+        dimensions.put(2, 0, floatArrayOf(width - 1.0F, height - 1.0F))
+        dimensions.put(3, 0, floatArrayOf(0.0F, height - 1.0F))
+        //get coordinates of board
+        val orderedCorners = Mat.zeros(4, 2, CvType.CV_32F)
+        orderedCorners.put(0, 0, floatArrayOf(boardCoordinates.bottomLeft.x.toFloat(), boardCoordinates.bottomLeft.y.toFloat()))
+        orderedCorners.put(1, 0, floatArrayOf(boardCoordinates.bottomRight.x.toFloat(), boardCoordinates.bottomRight.y.toFloat()))
+        orderedCorners.put(2, 0, floatArrayOf(boardCoordinates.topRight.x.toFloat(), boardCoordinates.topRight.y.toFloat()))
+        orderedCorners.put(3, 0, floatArrayOf(boardCoordinates.topLeft.x.toFloat(), boardCoordinates.topLeft.y.toFloat()))
+        //crop and warp to board
+        val grid = Imgproc.getPerspectiveTransform(orderedCorners, dimensions)
+        val bufferMatrix = generateBuffer(matrix)
+        Imgproc.warpPerspective(
+            bufferMatrix,
+            matrix,
+            grid,
+            Size(width.toDouble(), height.toDouble())
+        )
+        bufferMatrix.release()
     }
 
     private fun generateBuffer(matrix: Mat): Mat {
