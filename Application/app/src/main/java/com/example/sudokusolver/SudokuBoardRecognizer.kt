@@ -235,12 +235,25 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         convertToGrayscale(matrix)
         performBitwiseNot(matrix)
         performThresholding(matrix, 130.0)
+        //iterate through each cell and predict if there is a digit inside
+        for (cellIndex in cellPositions.indices) {
+            val cell = extractAreaFromMatrix(matrix, cellPositions[cellIndex])
+        }
     }
 
     private fun performThresholding(matrix: Mat, thresh: Double) {
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.threshold(bufferMatrix, matrix, thresh, 255.0, Imgproc.THRESH_BINARY)
         bufferMatrix.release()
+    }
+
+    private fun extractAreaFromMatrix(matrix: Mat, cellCoordinates: Rect): Mat {
+        //create a sub matrix by area
+        val cellX = cellCoordinates.x.toDouble()
+        val cellY = cellCoordinates.y.toDouble()
+        val cellWidth = cellCoordinates.width.toDouble()
+        val cellHeight = cellCoordinates.height.toDouble()
+        return matrix.submat(Rect(Point(cellX, cellY), Point(cellX + cellWidth, cellY + cellHeight)))
     }
 
     private fun setBoardMatrix(matrix: Mat) {
