@@ -6,6 +6,7 @@ import android.util.Log
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.Core
+import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.core.Size
 import org.opencv.imgcodecs.Imgcodecs
@@ -36,6 +37,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         performGaussianBlur(fullImage)
         performAdaptiveThresholding(fullImage, 11, 2.0)
         performBitwiseNot(fullImage)
+        performDilation(fullImage)
     }
 
     private fun getOriginalImage(): Mat {
@@ -71,6 +73,16 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private fun performBitwiseNot(matrix: Mat) {
         val bufferMatrix = generateBuffer(matrix)
         Core.bitwise_not(bufferMatrix, matrix)
+        bufferMatrix.release()
+    }
+
+    private fun performDilation(matrix: Mat) {
+        val kernel = Mat.zeros(3, 3, CvType.CV_8U)
+        kernel.put(0, 0, byteArrayOf(0.toByte(), 1.toByte(), 0.toByte()))
+        kernel.put(1, 0, byteArrayOf(1.toByte(), 1.toByte(), 1.toByte()))
+        kernel.put(2, 0, byteArrayOf(0.toByte(), 1.toByte(), 0.toByte()))
+        val bufferMatrix = generateBuffer(matrix)
+        Imgproc.dilate(bufferMatrix, matrix, kernel)
         bufferMatrix.release()
     }
 
