@@ -24,6 +24,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         }
         //perform preprocessing
         extractBoard()
+        val cellPositions = getCellPositionsByGrid()
     }
 
     private fun loadOpenCV(): Boolean {
@@ -162,6 +163,21 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             Size(width.toDouble(), height.toDouble())
         )
         bufferMatrix.release()
+    }
+
+    private fun getCellPositionsByGrid(): List<Rect> {
+        //iterate through each cell in the board and crop the matrix
+        val boardHeight = this.boardMatrix.height()
+        val boardWidth = this.boardMatrix.width()
+        val cellHeight = boardHeight / 9
+        val cellWidth = boardWidth / 9
+        val cells = mutableListOf<Rect>()
+        for (y in 0 until (boardHeight - cellHeight) step cellHeight) {
+            for (x in 0 until (boardWidth - cellWidth) step cellWidth) {
+                cells.add(Rect(Point(x.toDouble(), y.toDouble()), Point((x + cellWidth).toDouble(),(y + cellHeight).toDouble())))
+            }
+        }
+        return cells
     }
 
     private fun setBoardMatrix(matrix: Mat) {
