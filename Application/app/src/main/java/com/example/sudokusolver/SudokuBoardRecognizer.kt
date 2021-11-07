@@ -35,6 +35,8 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         performAdaptiveThresholding(fullImage, 11, 2.0)
         performBitwiseNot(fullImage)
         performDilation(fullImage)
+        //get board area in the image (finds largest rectangle in the image)
+        val boardCoordinates = findBoardCoordinates(fullImage)
     }
 
     private fun getOriginalImage(): Mat {
@@ -81,6 +83,35 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.dilate(bufferMatrix, matrix, kernel)
         bufferMatrix.release()
+    }
+
+    private fun findBoardCoordinates(matrix: Mat): BoardCoordinates {
+        //find contours
+        val contours = getContours(matrix, Imgproc.RETR_EXTERNAL)
+        //get largest contour area (presumably the sudoku board)
+        var largestContourArea = 0.0
+        var largestContourIndex = 0
+        for (i in contours.indices) {
+            val contourArea = Imgproc.contourArea(contours[i])
+            if (largestContourArea < contourArea) {
+                largestContourArea = contourArea
+                largestContourIndex = i
+            }
+        }
+        //calculate contour perimeter and approximate a polygon for the area
+        val bufferCurve = MatOfPoint2f()
+        contours[largestContourIndex].convertTo(bufferCurve, CvType.CV_32FC2)
+        val perimeter = Imgproc.arcLength(bufferCurve, true)
+        val approx = MatOfPoint2f()
+        Imgproc.approxPolyDP(bufferCurve, approx, 0.015 * perimeter, true)
+        //get each corners
+        val corners = approx.toList()
+        val boardCoordinates = BoardCoordinates()
+        boardCoordinates.topLeft = corners[2]
+        boardCoordinates.bottomLeft = corners[1]
+        boardCoordinates.bottomRight = corners[0]
+        boardCoordinates.topRight = corners[3]
+        return boardCoordinates
     }
 
     private fun getContours(matrix: Mat, mode: Int): List<MatOfPoint> {
