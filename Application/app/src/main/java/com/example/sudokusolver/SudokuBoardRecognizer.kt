@@ -1,6 +1,7 @@
 package com.example.sudokusolver
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
@@ -26,5 +27,10 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     fun setImageFromResource(resource: Int) {
         this.originalImage.release()
         this.originalImage = Utils.loadResource(context, resource, Imgcodecs.IMREAD_COLOR + Imgcodecs.IMREAD_IGNORE_ORIENTATION)
+    }
+
+    fun setImageFromBitmap(bitmap: Bitmap) {
+        this.originalImage.release()
+        Utils.bitmapToMat(bitmap, originalImage)
     }
 }
