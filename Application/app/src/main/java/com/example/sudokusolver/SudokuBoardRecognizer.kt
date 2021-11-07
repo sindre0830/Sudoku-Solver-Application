@@ -17,6 +17,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private lateinit var model: Model
     private var originalImage = Mat()
     private var boardMatrix = Mat()
+    private val imageSize = Size(28.0, 28.0)
 
     fun execute() {
         //check if dependencies has been loaded
@@ -253,6 +254,8 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
                 //get digit and adjust ROI
                 val digit = extractAreaFromMatrix(cell, Imgproc.boundingRect(contours[index]))
                 performAdjustROI(digit)
+                //perform preprocessing of image
+                resizeMatrix(digit, imageSize.width, imageSize.height)
             }
         }
     }
@@ -303,6 +306,14 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             }
         }
         matrix.adjustROI(top, bottom, left, right)
+    }
+
+    private fun resizeMatrix(matrix: Mat, width: Double, height: Double) {
+        var method = Imgproc.INTER_CUBIC.toDouble()
+        if (matrix.width() > width || matrix.height() > height) method = Imgproc.INTER_AREA.toDouble()
+        val bufferMatrix = generateBuffer(matrix)
+        Imgproc.resize(bufferMatrix, matrix, Size(width, height), method)
+        bufferMatrix.release()
     }
 
     private fun setBoardMatrix(matrix: Mat) {
