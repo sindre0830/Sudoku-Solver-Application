@@ -82,10 +82,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        if (!OpenCVLoader.initDebug())
-            Log.e("OpenCV", "Unable to load OpenCV!");
-        else
-            Log.d("OpenCV", "OpenCV loaded Successfully!");
     }
 }
 
