@@ -3,6 +3,7 @@ package com.example.sudokusolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import com.example.sudokusolver.ml.Model
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.*
@@ -13,6 +14,7 @@ import kotlin.math.sqrt
 
 class SudokuBoardRecognizer constructor(private val context: Context) {
     private var dependenciesLoaded = loadOpenCV()
+    private lateinit var model: Model
     private var originalImage = Mat()
     private var boardMatrix = Mat()
 
@@ -22,9 +24,13 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             Log.e("OpenCV", "OpenCV failed to load and is preventing image recognition")
             return
         }
+        //initialize Tensorflow Lite model
+        model = Model.newInstance(context)
         //perform preprocessing
         extractBoard()
         val cellPositions = getCellPositionsByContours()
+        //clean up
+        model.close()
     }
 
     private fun loadOpenCV(): Boolean {
