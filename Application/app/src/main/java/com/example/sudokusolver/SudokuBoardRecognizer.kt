@@ -32,6 +32,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         val fullImage = getOriginalImage()
         //perform preprocessing of image
         convertToGrayscale(fullImage)
+        performGaussianBlur(fullImage)
     }
 
     private fun getOriginalImage(): Mat {
@@ -41,6 +42,12 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private fun convertToGrayscale(matrix: Mat) {
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.cvtColor(bufferMatrix, matrix, Imgproc.COLOR_BGR2GRAY)
+        bufferMatrix.release()
+    }
+
+    private fun performGaussianBlur(matrix: Mat) {
+        val bufferMatrix = generateBuffer(matrix)
+        Imgproc.GaussianBlur(bufferMatrix, matrix, Size(9.0, 9.0), 0.0)
         bufferMatrix.release()
     }
 
