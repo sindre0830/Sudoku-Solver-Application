@@ -238,6 +238,22 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //iterate through each cell and predict if there is a digit inside
         for (cellIndex in cellPositions.indices) {
             val cell = extractAreaFromMatrix(matrix, cellPositions[cellIndex])
+            val contours = getContours(cell, Imgproc.RETR_CCOMP)
+            var index = -1
+            //iterate through contours in cell and break at first contour area that could be digit
+            for (i in contours.indices) {
+                val area = Imgproc.boundingRect(contours[i])
+                if (!(area.x < 4 || area.y < 4 || area.height < 4 || area.width < 4)) {
+                    index = i
+                    break
+                }
+            }
+            //branch if digit was found in cell and predict
+            if (index >= 0) {
+                //get digit and adjust ROI
+                val digit = extractAreaFromMatrix(cell, Imgproc.boundingRect(contours[index]))
+                performAdjustROI(digit)
+            }
         }
     }
 
@@ -254,6 +270,39 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         val cellWidth = cellCoordinates.width.toDouble()
         val cellHeight = cellCoordinates.height.toDouble()
         return matrix.submat(Rect(Point(cellX, cellY), Point(cellX + cellWidth, cellY + cellHeight)))
+    }
+
+    private fun performAdjustROI(matrix: Mat) {
+        //resizes matrix by adding margin on each side and adding rows or columns where needed
+        //this makes resizing a lot better since it's already a square
+        var top = 2
+        var bottom = 2
+        var left = 2
+        var right = 2
+        if (matrix.width() < matrix.height()) {
+            var diff = matrix.height() - matrix.width()
+            if (diff.mod(2) != 0) {
+                diff = (diff + 1) / 2
+                left += diff - 1
+                right += diff
+            } else {
+                diff /= 2
+                left += diff
+                right += diff
+            }
+        } else if (matrix.width() > matrix.height()) {
+            var diff = matrix.width() - matrix.height()
+            if (diff.mod(2) != 0) {
+                diff = (diff + 1) / 2
+                top += diff - 1
+                bottom += diff
+            } else {
+                diff /= 2
+                top += diff
+                bottom += diff
+            }
+        }
+        matrix.adjustROI(top, bottom, left, right)
     }
 
     private fun setBoardMatrix(matrix: Mat) {
