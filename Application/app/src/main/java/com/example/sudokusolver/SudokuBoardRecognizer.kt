@@ -9,6 +9,10 @@ import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -18,6 +22,9 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private var originalImage = Mat()
     private var boardMatrix = Mat()
     private val imageSize = Size(28.0, 28.0)
+    private val inputBuffer = ByteBuffer.allocateDirect(4 * imageSize.width.toInt() * imageSize.height.toInt()).apply { order(ByteOrder.nativeOrder()) }
+    //generate list of 81 zeros representing an empty board
+    var predictionOutput = MutableList(81) { 0 }
 
     fun execute() {
         //check if dependencies has been loaded
@@ -258,8 +265,11 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
                 resizeMatrix(digit, imageSize.width, imageSize.height)
                 performThresholding(digit, 160.0)
                 normalizeMatrix(digit)
+                //predict on digit
+                predictionOutput[cellIndex] = predictCell(digit, model)
             }
         }
+        matrix.release()
     }
 
     private fun performThresholding(matrix: Mat, thresh: Double) {
@@ -322,6 +332,33 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         val bufferMatrix = generateBuffer(matrix)
         Core.normalize(bufferMatrix, matrix, 1.0, 0.0, Core.NORM_MINMAX)
         bufferMatrix.release()
+    }
+
+    private fun predictCell(cell: Mat, model: Model): Int {
+        //convert matrix to bytebuffer
+        inputBuffer.rewind()
+        for (i in 0 until imageSize.height.toInt()) {
+            for (j in 0 until imageSize.width.toInt()) {
+                inputBuffer.putFloat(cell.get(i, j)[0].toFloat())
+            }
+        }
+        //input buffer to model
+        val input = TensorBuffer.createFixedSize(intArrayOf(1, imageSize.width.toInt(), imageSize.height.toInt(), 1), DataType.FLOAT32)
+        input.loadBuffer(inputBuffer)
+        //output new buffer from model
+        val outputBuffer = model.process(input)
+        val output = outputBuffer.outputFeature0AsTensorBuffer
+        //get the index (label) of the highest accuracy
+        val predictions = output.floatArray
+        var highestAccuracy = 0.0F
+        var prediction = 0
+        for (i in predictions.indices) {
+            if (predictions[i] > highestAccuracy) {
+                highestAccuracy = predictions[i]
+                prediction = i
+            }
+        }
+        return prediction
     }
 
     private fun setBoardMatrix(matrix: Mat) {
