@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
+import org.opencv.core.Core
 import org.opencv.core.Mat
 import org.opencv.core.Size
 import org.opencv.imgcodecs.Imgcodecs
@@ -34,6 +35,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         convertToGrayscale(fullImage)
         performGaussianBlur(fullImage)
         performAdaptiveThresholding(fullImage, 11, 2.0)
+        performBitwiseNot(fullImage)
     }
 
     private fun getOriginalImage(): Mat {
@@ -63,6 +65,12 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             blockSize,
             constSubtraction
         )
+        bufferMatrix.release()
+    }
+
+    private fun performBitwiseNot(matrix: Mat) {
+        val bufferMatrix = generateBuffer(matrix)
+        Core.bitwise_not(bufferMatrix, matrix)
         bufferMatrix.release()
     }
 
