@@ -256,6 +256,8 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
                 performAdjustROI(digit)
                 //perform preprocessing of image
                 resizeMatrix(digit, imageSize.width, imageSize.height)
+                performThresholding(digit, 160.0)
+                normalizeMatrix(digit)
             }
         }
     }
@@ -313,6 +315,12 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         if (matrix.width() > width || matrix.height() > height) method = Imgproc.INTER_AREA.toDouble()
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.resize(bufferMatrix, matrix, Size(width, height), method)
+        bufferMatrix.release()
+    }
+
+    private fun normalizeMatrix(matrix: Mat) {
+        val bufferMatrix = generateBuffer(matrix)
+        Core.normalize(bufferMatrix, matrix, 1.0, 0.0, Core.NORM_MINMAX)
         bufferMatrix.release()
     }
 
