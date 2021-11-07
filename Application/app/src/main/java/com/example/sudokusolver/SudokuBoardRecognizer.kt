@@ -1,10 +1,15 @@
 package com.example.sudokusolver
 
+import android.content.Context
 import android.util.Log
 import org.opencv.android.OpenCVLoader
+import org.opencv.android.Utils
+import org.opencv.core.Mat
+import org.opencv.imgcodecs.Imgcodecs
 
-class SudokuBoardRecognizer {
+class SudokuBoardRecognizer constructor(private val context: Context) {
     private var dependenciesLoaded = loadOpenCV()
+    private var originalImage = Mat()
 
     fun execute() {
         //check if dependencies has been loaded
@@ -16,5 +21,10 @@ class SudokuBoardRecognizer {
 
     private fun loadOpenCV(): Boolean {
         return OpenCVLoader.initDebug()
+    }
+
+    fun setImageFromResource(resource: Int) {
+        this.originalImage.release()
+        this.originalImage = Utils.loadResource(context, resource, Imgcodecs.IMREAD_COLOR + Imgcodecs.IMREAD_IGNORE_ORIENTATION)
     }
 }
