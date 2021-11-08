@@ -39,20 +39,8 @@ class MainActivity : ComponentActivity( ) {
             arrayOf(0,0,0,0,0,0,0,0,0)
         )
 
-
-        val alsoHardBoard = arrayOf(
-            arrayOf(0,0,0,8,0,1,0,0,0),
-            arrayOf(0,0,0,0,0,0,4,3,0),
-            arrayOf(5,0,0,0,0,0,0,0,0),
-            arrayOf(0,0,0,0,7,0,8,0,0),
-            arrayOf(0,0,0,0,0,0,1,0,0),
-            arrayOf(0,2,0,0,3,0,0,0,0),
-            arrayOf(6,0,0,0,0,0,0,7,5),
-            arrayOf(0,0,3,4,0,0,0,0,0),
-            arrayOf(0,0,0,2,0,0,6,0,0)
-        )
-
-        val hardBoard= arrayOf(
+        // works but unbearably slowx3 - 17 filled squares
+        val hardestBoard= arrayOf(
             arrayOf(0,0,0,7,0,0,0,0,0),
             arrayOf(1,0,0,0,0,0,0,0,0),
             arrayOf(0,0,0,4,3,0,2,0,0),
@@ -64,6 +52,33 @@ class MainActivity : ComponentActivity( ) {
             arrayOf(0,4,0,0,0,0,3,0,0)
         )
 
+        // works but unbearably slow - 17 filled squares
+        val hardBoard = arrayOf(
+            arrayOf(0,0,0,8,0,1,0,0,0),
+            arrayOf(0,0,0,0,0,0,4,3,0),
+            arrayOf(5,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,7,0,8,0,0),
+            arrayOf(0,0,0,0,0,0,1,0,0),
+            arrayOf(0,2,0,0,3,0,0,0,0),
+            arrayOf(6,0,0,0,0,0,0,7,5),
+            arrayOf(0,0,3,4,0,0,0,0,0),
+            arrayOf(0,0,0,2,0,0,6,0,0)
+        )
+
+        // 21 numbers - "impossible" on website
+        val mediumHard = arrayOf(
+            arrayOf(0,3,0,0,0,0,9,0,0),
+            arrayOf(0,0,6,0,0,0,0,0,0),
+            arrayOf(0,0,0,2,4,1,0,3,0),
+            arrayOf(0,0,0,9,0,0,7,0,0),
+            arrayOf(0,0,0,0,0,2,0,0,4),
+            arrayOf(0,8,0,0,7,0,0,2,0),
+            arrayOf(8,5,0,0,0,0,0,0,0),
+            arrayOf(0,9,0,7,0,4,0,0,0),
+            arrayOf(0,0,0,0,0,6,0,0,1)
+        )
+
+        // works but slow at 6s - 22 filled squares
         val mediumBoard = arrayOf(
             arrayOf(0,0,0,6,0,0,4,0,0),
             arrayOf(7,0,0,0,0,3,6,0,0),
@@ -75,8 +90,20 @@ class MainActivity : ComponentActivity( ) {
             arrayOf(9,0,3,0,0,0,0,0,0),
             arrayOf(0,2,0,0,0,0,1,0,0)
         )
+        // 28 filled squares -
+        val mediumEasy = arrayOf(
+            arrayOf(0,0,8,0,0,6,0,7,0),
+            arrayOf(4,0,0,0,0,0,0,5,3),
+            arrayOf(0,0,5,4,0,0,0,0,0),
+            arrayOf(6,0,7,9,0,5,3,0,1),
+            arrayOf(9,8,0,0,0,0,0,6,5),
+            arrayOf(0,0,0,7,0,1,0,0,0),
+            arrayOf(0,0,0,0,0,2,1,0,0),
+            arrayOf(1,3,0,0,0,0,0,0,8),
+            arrayOf(0,9,0,1,0,0,4,0,0)
+        )
 
-        // works - final square 9
+        // works - 36 filled squares
         val easyBoard = arrayOf(
             arrayOf(0,0,0,2,6,0,7,0,1),
             arrayOf(6,8,0,0,7,0,0,9,0),
@@ -88,35 +115,16 @@ class MainActivity : ComponentActivity( ) {
             arrayOf(0,4,0,0,5,0,0,3,6),
             arrayOf(7,0,3,0,1,8,0,0,0)
             )
-        val test = dumbVer
+        //val test = dumbVer
         //test.fill()
-        val result = solve(0, alsoHardBoard)
-        for (i in result.first.indices) {
-            Log.i("Board: ", result.first[i].contentToString())
-        }
-        Log.i("Solved: ", result.second.toString())
-        /*
-        val board = GridModel
-        // works!
-        board.fill(newBoard)
-        board.PrintBoard()
-        // not works!
-        board.solver.solve()
-
-        // Generates boards!
-        val board = Sudoku.Builder().setLevel(Level.MEDIUM).build()
-        board.printGrid()
-        // We need to change the sourcecode so we can pass the board into
-        // the solver the way we want, but otherwise this works.
-        // Cannot guarantee speed however!
-        // Need to optimize/multithread...
-        val solved = Solver.solvable(board.grid)
-        if(solved.first) {
-            Solver.printGrid(solved.second)
-        } else {
-            Log.d("UNSOLVABLE", "BOO")
-        }
-         */
+        // threading - fixes freeze at least
+        Thread {
+            val result = solve(0, mediumEasy)
+            for (i in result.first.indices) {
+                Log.i("Board: ", result.first[i].contentToString())
+            }
+            Log.i("Solved: ", result.second.toString())
+        }.start()
     }
 }
 

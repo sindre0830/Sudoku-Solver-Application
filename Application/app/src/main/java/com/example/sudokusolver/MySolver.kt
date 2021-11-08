@@ -211,15 +211,13 @@ object dumbVer {
         var colIndex = index % columns
         var newBoard = copyArray(board)
 
-        // Place here, doesn't fill last square. Place after for-loop, get out of range. Gotta solve.
-        if(index == 80) {
-            status = true
-            return Pair(copyArray(board), status)
-        }
-
         for (candidateValue in range) {
             newBoard[rowIndex][colIndex] = candidateValue
-            var temp = solve(index+1, newBoard)
+            if(index == 80) {
+                status = true
+                return Pair(newBoard, status)
+            }
+            var temp = solve(index + 1, newBoard)
             if(temp.second == true) {
                 return temp
             }
