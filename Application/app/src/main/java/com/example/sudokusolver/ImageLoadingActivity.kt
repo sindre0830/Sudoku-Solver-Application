@@ -127,13 +127,17 @@ fun LoadImageFromGalleryBtn() {
     )
     imageUri?.let { uri ->
         val bitmap = imageUriToBitmap(context, uri)
-        val predictionOutput = SudokuBoardRecognizer(context).also {
-            it.setImageFromBitmap(bitmap)
-            it.execute()
-        }.predictionOutput
+        val recognizer = SudokuBoardRecognizer(context)
+        //recognizer.setImageFromResource(R.drawable.sudokuboard1)
+        recognizer.setImageFromBitmap(bitmap)
+        recognizer.execute()
+        val predictionOutput = recognizer.predictionOutput
 
         Log.d("OpenCV", predictionOutput.toString())
+        recognizer.setImageFromBitmap(bitmap)
 
+        // Uncomment to debug
+       // DebugImage(recognizer.debugImage)
         context.startActivity(
             Intent(context, MainActivity::class.java).putIntegerArrayListExtra(
                 SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
@@ -175,7 +179,6 @@ fun imageUriToBitmap(context: Context, uri: Uri): Bitmap {
             .createSource(context.contentResolver, uri)
         ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
             decoder.isMutableRequired = true
-
         }
     }
 }
