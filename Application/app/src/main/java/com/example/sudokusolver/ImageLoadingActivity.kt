@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
 import kotlinx.coroutines.launch
+import java.util.ArrayList
 
 class ImageLoadingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,9 +113,6 @@ fun LoadImageFromGalleryBtn() {
         mutableStateOf<Uri?>(null)
     }
     val context = LocalContext.current
-    val bitmap = remember {
-        mutableStateOf<Bitmap?>(null)
-    }
     val launcher = rememberLauncherForActivityResult(
         contract =
         ActivityResultContracts.GetContent()
@@ -128,15 +126,24 @@ fun LoadImageFromGalleryBtn() {
         descriptionResourceId = R.string.image_loading_activity_icon_description_gallery,
     )
     imageUri?.let { uri ->
-        bitmap.value = imageUriToBitmap(context, uri)
-        bitmap.value?.let { btm ->
-            // TODO: Remove this image. This image should be processed to an array of ints.
-            Image(
-                bitmap = btm.asImageBitmap(),
-                contentDescription = "image loaded",
-                modifier = Modifier.size(400.dp)
+        val bitmap = imageUriToBitmap(context, uri)
+        val recognizer = SudokuBoardRecognizer(context)
+        //recognizer.setImageFromResource(R.drawable.sudokuboard1)
+        recognizer.setImageFromBitmap(bitmap)
+        recognizer.execute()
+        val predictionOutput = recognizer.predictionOutput
+
+        Log.d("OpenCV", predictionOutput.toString())
+        recognizer.setImageFromBitmap(bitmap)
+
+        // Uncomment to debug
+       // DebugImage(recognizer.debugImage)
+        context.startActivity(
+            Intent(context, MainActivity::class.java).putIntegerArrayListExtra(
+                SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
             )
-        }
+        )
+
     }
 }
 
@@ -170,6 +177,8 @@ fun imageUriToBitmap(context: Context, uri: Uri): Bitmap {
     } else {
         val source = ImageDecoder
             .createSource(context.contentResolver, uri)
-        ImageDecoder.decodeBitmap(source)
+        ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+            decoder.isMutableRequired = true
+        }
     }
 }

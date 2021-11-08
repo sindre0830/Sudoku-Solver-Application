@@ -3,6 +3,7 @@ package com.example.sudokusolver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -29,19 +30,25 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+const val SUDOKU_BOARD_KEY = "sudoku_board"
 typealias mutateBoardFn = (index: Int, backgroundColor: Color, number: Int) -> Unit
 typealias mutateBoardColorFn = (index: Int, backgroundColor: Color) -> Unit
 typealias mutateBoardNumberFn = (index: Int, number: Int) -> Unit
 
 class MainActivity : ComponentActivity() {
-    private val SUDOKU_BOARD = stringPreferencesKey("sudoku_board")
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "sudoku_board")
+    private val SUDOKU_BOARD = stringPreferencesKey(SUDOKU_BOARD_KEY)
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SUDOKU_BOARD_KEY)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val verticalLength = 9
+
         setContent {
-            val board = runBlocking { loadBoard() ?: mockBoard(9) }
+            val board: List<Int> = runBlocking {
+                intent.getIntegerArrayListExtra(SUDOKU_BOARD_KEY)?.toList()
+                    ?: loadBoard()
+                    ?: mockBoard(9)
+            }
 
             val sudokuBoard: SnapshotStateList<SudokuBoardItem> =
                 remember { setupBoard(board) }
