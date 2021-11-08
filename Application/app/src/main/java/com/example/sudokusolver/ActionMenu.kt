@@ -1,6 +1,5 @@
 package com.example.sudokusolver
 
-import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -61,31 +60,30 @@ fun ActionMenu(actionMenuItems: List<ActionMenuItem>) {
 
 fun handleActionMenuItems(
     sudokuItemClicked: Int,
-    sudokuBoard: SnapshotStateList<SudokuBoardItem>,
+    boardSize: Int,
     history: SnapshotStateList<HistoryItem>,
-    startImageLoadingActivity: () -> Unit
+    startImageLoadingActivity: () -> Unit,
+    mutateBoard: mutateBoardFn,
+    mutateBoardNumber: mutateBoardNumberFn
 ): List<ActionMenuItem> {
-    // TODO: Review icons used. Finding good icons is difficult...
-    // See options: https://fonts.google.com/icons?selected=Material+Icons&icon.query=delete
-    // We can also import external icons if we do not find anything we are happy with.
     return listOf(
         ActionMenuItem(
             icon = Icons.Rounded.Clear,
             contentDescriptionResourceId = R.string.action_menu_icon_description_clear,
-            handleClick = { clearSudokuBoard(sudokuBoard) },
+            handleClick = { clearSudokuBoard(boardSize, mutateBoard) },
         ),
         ActionMenuItem(
             icon = Icons.Rounded.Undo,
             contentDescriptionResourceId = R.string.action_menu_icon_description_remove,
             handleClick = {
-                undoOperation(sudokuBoard, history)
+                undoOperation(mutateBoardNumber, history)
             },
         ),
         ActionMenuItem(
             icon = Icons.Rounded.Delete,
             contentDescriptionResourceId = R.string.action_menu_icon_description_delete,
             handleClick = {
-                deleteSudokuItem(sudokuBoard, sudokuItemClicked)
+                deleteSudokuItem(sudokuItemClicked, mutateBoardNumber)
             },
         ),
         ActionMenuItem(
@@ -102,46 +100,36 @@ fun handleActionMenuItems(
     )
 }
 
-fun deleteSudokuItem(sudokuBoard: SnapshotStateList<SudokuBoardItem>, sudokuItemClicked: Int) {
-    mutateBoard(
-        index = sudokuItemClicked,
-        number = 0,
-        board = sudokuBoard
+fun deleteSudokuItem(sudokuItemClicked: Int, mutateBoardNumber: mutateBoardNumberFn) {
+    mutateBoardNumber(
+        sudokuItemClicked,
+        0,
     )
 }
 
-fun clearSudokuBoard(sudokuBoard: SnapshotStateList<SudokuBoardItem>) {
-    for (i in 0 until sudokuBoard.size) {
+fun clearSudokuBoard(boardSize: Int, mutateBoard: mutateBoardFn) {
+    for (i in 0 until boardSize) {
         mutateBoard(
-            index = i,
-            number = 0,
-            backgroundColor = Color.White,
-            board = sudokuBoard
+            i,
+            Color.White,
+            0,
         )
     }
 }
 
 fun undoOperation(
-    sudokuBoard: SnapshotStateList<SudokuBoardItem>,
+    mutateBoardNumber: mutateBoardNumberFn,
     history: SnapshotStateList<HistoryItem>
 ) {
     if (history.isNotEmpty()) {
         val historyItem = history[history.lastIndex]
         history.remove(historyItem)
-        mutateBoard(
-            index = historyItem.sudokuItem,
-            number = historyItem.oldValue,
-            backgroundColor = Color.White,
-            board = sudokuBoard
+        mutateBoardNumber(
+            historyItem.sudokuItem,
+            historyItem.oldValue,
         )
 
-        // Only move color box selected if there are more history entries
-        if (history.isNotEmpty()) {
-            mutateBoard(
-                index = history[history.lastIndex].sudokuItem,
-                backgroundColor = ColorBoxSelected,
-                board = sudokuBoard
-            )
-        }
+        // we also have to remove the history item after the mutation above
+        history.remove(history[history.lastIndex])
     }
 }

@@ -77,4 +77,6 @@ dependencies {
     // CameraX View class
     implementation "androidx.camera:camera-view:1.0.0-alpha30"
 
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
 }
