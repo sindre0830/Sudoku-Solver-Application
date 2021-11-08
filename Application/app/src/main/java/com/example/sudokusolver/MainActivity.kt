@@ -9,6 +9,10 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.sudokusolver.dumbVer.removeCol
+import com.example.sudokusolver.dumbVer.removeRow
+import com.example.sudokusolver.dumbVer.removeUsedValues
+import com.example.sudokusolver.dumbVer.solve
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
 
 class MainActivity : ComponentActivity( ) {
@@ -23,21 +27,74 @@ class MainActivity : ComponentActivity( ) {
             }
         }
 
-        // actual sudoku puzzle
-        val newBoard = mutableListOf(   5,3,0,0,7,8,0,0,0,
-                                        6,0,0,1,9,5,0,0,0,
-                                        0,9,8,0,0,0,0,6,0,
-                                        8,0,0,0,6,0,0,0,3,
-                                        4,0,0,8,0,3,0,0,1,
-                                        7,0,0,0,2,0,0,0,6,
-                                        0,6,0,0,0,0,2,8,0,
-                                        0,0,0,4,1,9,0,0,5,
-                                        0,0,0,0,8,0,0,7,9,  )
+        val template = arrayOf(
+            arrayOf(0,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,0,0,0,0,0)
+        )
+
+
+        val alsoHardBoard = arrayOf(
+            arrayOf(0,0,0,8,0,1,0,0,0),
+            arrayOf(0,0,0,0,0,0,4,3,0),
+            arrayOf(5,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,0,7,0,8,0,0),
+            arrayOf(0,0,0,0,0,0,1,0,0),
+            arrayOf(0,2,0,0,3,0,0,0,0),
+            arrayOf(6,0,0,0,0,0,0,7,5),
+            arrayOf(0,0,3,4,0,0,0,0,0),
+            arrayOf(0,0,0,2,0,0,6,0,0)
+        )
+
+        val hardBoard= arrayOf(
+            arrayOf(0,0,0,7,0,0,0,0,0),
+            arrayOf(1,0,0,0,0,0,0,0,0),
+            arrayOf(0,0,0,4,3,0,2,0,0),
+            arrayOf(0,0,0,0,0,0,0,0,6),
+            arrayOf(0,0,0,5,0,9,0,0,0),
+            arrayOf(0,0,0,0,0,0,4,1,8),
+            arrayOf(0,0,0,0,8,1,0,0,0),
+            arrayOf(0,0,2,0,0,0,0,5,0),
+            arrayOf(0,4,0,0,0,0,3,0,0)
+        )
+
+        val mediumBoard = arrayOf(
+            arrayOf(0,0,0,6,0,0,4,0,0),
+            arrayOf(7,0,0,0,0,3,6,0,0),
+            arrayOf(0,0,0,0,9,1,0,8,0),
+            arrayOf(0,0,0,0,0,0,0,0,0),
+            arrayOf(0,5,0,1,8,0,0,0,3),
+            arrayOf(0,0,0,3,0,6,0,4,5),
+            arrayOf(0,4,0,2,0,0,0,6,0),
+            arrayOf(9,0,3,0,0,0,0,0,0),
+            arrayOf(0,2,0,0,0,0,1,0,0)
+        )
+
+        // works - final square 9
+        val easyBoard = arrayOf(
+            arrayOf(0,0,0,2,6,0,7,0,1),
+            arrayOf(6,8,0,0,7,0,0,9,0),
+            arrayOf(1,9,0,0,0,4,5,0,0),
+            arrayOf(8,2,0,1,0,0,0,4,0),
+            arrayOf(0,0,4,6,0,2,9,0,0),
+            arrayOf(0,5,0,0,0,3,0,2,8),
+            arrayOf(0,0,9,3,0,0,0,7,4),
+            arrayOf(0,4,0,0,5,0,0,3,6),
+            arrayOf(7,0,3,0,1,8,0,0,0)
+            )
         val test = dumbVer
-        test.fill(newBoard)
-        //test.PrintBoard()
-
-
+        //test.fill()
+        val result = solve(0, alsoHardBoard)
+        for (i in result.first.indices) {
+            Log.i("Board: ", result.first[i].contentToString())
+        }
+        Log.i("Solved: ", result.second.toString())
         /*
         val board = GridModel
         // works!

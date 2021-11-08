@@ -82,8 +82,6 @@ class MySolver   {
     }
     fun solve() {
 
-        Log.i("Got here: ", "solve()")
-
         // Order Sudoku cells by count of how many candidate values they have left
         // Starting with the most constrained cells (with fewest possible values left) will greatly reduce the search space
         // Fixed cells will have only 1 candidate and will be processed first
@@ -183,42 +181,71 @@ object dumbVer {
     var rows = 9
     var columns = rows
     var squareSides = sqrt(rows.toDouble()).toInt()
+    var maxIndex = 0
 
-    var grid = mutableListOf<Int>()
+    var grid = arrayOf<Array<Int>>()
     // Own function - fills grid from list we pass in
-    fun fill(list: List<Int>) {
-        if (list.count() == 81) {
-            grid = list.toMutableList()
-        }
+    fun fill(array: Array<Array<Int>>) {
+        grid = array
     }
-    fun PrintBoard() {
-        grid.forEach() {
-            Log.i("Board: ", it.toString())
+    fun printBoard(board: Array<Array<Int>>) {
+        for (i in board.indices) {
+            Log.i("Board: ", board[i].contentToString())
         }
     }
 
-    fun solve(index: Int, board: MutableList<Int>): Pair<MutableList<Int>, Boolean> {
-        // Look at one cell
-        // exclude all numbers that are on the row/column/square
-        // create a new solve() for the next cell for every remaining viable number
-        // therefore we need cellindex and board
-                //remove unusable values
+    // gets pretty far but still not working, let's fix later!
+    fun solve(index: Int,  board: Array<Array<Int>>): Pair<Array<Array<Int>>, Boolean> {
+        // for getting best board
+        /*
+        if (index > maxIndex && index > 50) {
+            Log.i("Highest index: ", index.toString())
+            maxIndex = index
+        }
+
+         */
         val range = removeUsedValues(index, board)
         // check if we got a good board
-        var result = Pair<MutableList<Int>, Boolean>(board, false)
-        var newBoard = board
+        var result = Pair(board, status)
+        var rowIndex = index / rows
+        var colIndex = index % columns
+        var newBoard = copyArray(board)
+
+        // Place here, doesn't fill last square. Place after for-loop, get out of range. Gotta solve.
+        if(index == 80) {
+            status = true
+            return Pair(copyArray(board), status)
+        }
+
         for (candidateValue in range) {
-            newBoard.set(index, candidateValue)
+            newBoard[rowIndex][colIndex] = candidateValue
             var temp = solve(index+1, newBoard)
             if(temp.second == true) {
-                result = temp
+                return temp
             }
         }
 
         // does not update if board is unsolvable!!
         return result
     }
-    fun removeUsedValues(index: Int, board: List<Int>): List<Int> {
+
+    private fun copyArray(old: Array<Array<Int>>): Array<Array<Int>> {
+        //var newArray = arrayOf<Array<Int>>()
+        val newArray: Array<Array<Int>> = Array<Array<Int>>(9){ Array<Int>(9) {0} }
+        for (i in (0..8)) {
+            newArray[i] = old[i].copyOf()
+        }
+        return newArray
+    }
+
+    fun removeUsedValues(index: Int, board: Array<Array<Int>>): List<Int> {
+        var rowIndex = index / rows
+        var colIndex = index % columns
+        // If square is prefilled, return only that value
+        if(board[rowIndex][colIndex] != 0) {
+            return listOf(board[rowIndex][colIndex])
+        }
+
         var noRow = removeRow(index, board)
         var noCol = removeCol(noRow, index, board)
         var noSquare = removeSquare(noCol, index, board)
@@ -226,78 +253,55 @@ object dumbVer {
         return noSquare
     }
 
-    // should work
-    fun removeRow(index: Int, board: List<Int>): MutableList<Int> {
-        var indexes: MutableList<Int>
-        indexes = getRowIndex(index)
+    // WORKS
+    fun removeRow(index: Int, board: Array<Array<Int>>): MutableList<Int> {
+        var rowIndex = index / rows
 
         var newRange: MutableList<Int> = (1..9).toMutableList()
 
-        indexes.forEach {
-            if (board.indexOf(it) != 0) {
-                newRange.remove(board.indexOf(it))
+        board[rowIndex].forEach {
+            if (it != 0) {
+                newRange.remove(it)
             }
         }
+
         return newRange
     }
 
-    fun removeCol (range: MutableList<Int>, index: Int, board: List<Int>): MutableList<Int> {
-        var indexes: MutableList<Int>
-        indexes = getColIndex(index)
+    fun removeCol (range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
+        var colIndex = index % columns
+        var newRange: MutableList<Int> = range
+
+        board.forEach {
+            if (it[colIndex] != 0) {
+                newRange.remove(it[colIndex])
+            }
+        }
+
+        return newRange
+    }
+
+    fun removeSquare (range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
+        val rowStart = findBoxStart(index/rows)
+        val rowEnd = findBoxEnd(rowStart)
+        val columnStart = findBoxStart(index%columns)
+        val columnEnd = findBoxEnd(columnStart)
 
         var newRange: MutableList<Int> = range
 
-        indexes.forEach {
-            if (board.indexOf(it) != 0) {
-                newRange.remove(board.indexOf(it))
+        for (i in rowStart until rowEnd) {
+            for (j in columnStart until columnEnd) {
+                if (board[i][j] != 0) {
+                    newRange.remove(board[i][j])
+                }
             }
         }
+
         return newRange
     }
 
-    fun removeSquare (range: MutableList<Int>, index: Int, board: List<Int>): MutableList<Int> {
-        var indexes: MutableList<Int>
-        indexes = getSquareIndex(index)
+    private fun findBoxStart(index: Int) = index - index % squareSides
 
-        var newRange: MutableList<Int> = range
+    private fun findBoxEnd(index: Int) = index + squareSides
 
-        indexes.forEach {
-            if (board.indexOf(it) != 0) {
-                newRange.remove(board.indexOf(it))
-            }
-        }
-        return newRange
-    }
-
-
-    // works!
-    fun getRowIndex(index: Int): MutableList<Int> {
-        var row = mutableListOf<Int>()
-        var start = index / rows
-
-        for (i in 0..(rows-1)) {
-            row.add(i + 1 + (rows * start))
-        }
-        return row
-    }
-    // works!
-    fun getColIndex(index: Int): MutableList<Int> {
-        var col = mutableListOf<Int>()
-        var remainder = index%rows
-        for (i in 0..(columns-1)) {
-            col.add(remainder + columns*i)
-        }
-        return col
-    }
-    fun getSquareIndex(index: Int): MutableList<Int> {
-        var square = mutableListOf<Int>()
-        var squareCol = 1 + (index % columns) / squareSides // 1 - 3
-        var squareRow = 1 + (index / rows) / squareSides // 1 - 3
-        for(i in 1..(squareSides)) {
-            for (j in 1..(squareSides)) {
-                // it's breakin mah brain!
-            }
-        }
-        return square
-    }
 }
