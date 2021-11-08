@@ -268,7 +268,7 @@ private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
 
                         context.startActivity(
                             Intent(context, MainActivity::class.java).putExtra(
-                                SUDOKU_BOARD_KEY, predictionOutput.toTypedArray()
+                                SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
                             )
                         )
                     },

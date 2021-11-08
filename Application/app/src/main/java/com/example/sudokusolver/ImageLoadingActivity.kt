@@ -135,8 +135,8 @@ fun LoadImageFromGalleryBtn() {
         Log.d("OpenCV", predictionOutput.toString())
 
         context.startActivity(
-            Intent(context, MainActivity::class.java).putExtra(
-                SUDOKU_BOARD_KEY, predictionOutput.toTypedArray()
+            Intent(context, MainActivity::class.java).putIntegerArrayListExtra(
+                SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
             )
         )
 
@@ -173,6 +173,9 @@ fun imageUriToBitmap(context: Context, uri: Uri): Bitmap {
     } else {
         val source = ImageDecoder
             .createSource(context.contentResolver, uri)
-        ImageDecoder.decodeBitmap(source)
+        ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+            decoder.isMutableRequired = true
+
+        }
     }
 }

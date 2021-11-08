@@ -3,6 +3,7 @@ package com.example.sudokusolver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -44,7 +45,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val board: List<Int> = runBlocking {
-                intent.getIntArrayExtra(SUDOKU_BOARD_KEY)?.toList() ?: loadBoard() ?: mockBoard(9)
+                intent.getIntegerArrayListExtra(SUDOKU_BOARD_KEY)?.toList()
+                    ?: loadBoard()
+                    ?: mockBoard(9)
             }
 
             val sudokuBoard: SnapshotStateList<SudokuBoardItem> =
