@@ -28,7 +28,7 @@ class ATest {
             arrayOf(0,4,0,0,5,0,0,3,6),
             arrayOf(7,0,3,0,1,8,0,0,0)
         )
-        val result = dumbVer.removeUsedValues(index, easyBoard)
+        val result = SudokuSolver.removeUsedValues(index, easyBoard)
 
         assertEquals(expected.toList(), result)
     }
@@ -56,7 +56,7 @@ class ATest {
             arrayOf(9,0,3,0,0,0,0,0,0),
             arrayOf(0,2,0,0,0,0,1,0,0)
         )
-        val result = dumbVer.removeUsedValues(index, mediumBoard)
+        val result = SudokuSolver.removeUsedValues(index, mediumBoard)
 
         assertEquals(expected.toList(), result)
     }
@@ -84,7 +84,7 @@ class ATest {
             arrayOf(0,0,3,4,0,0,0,0,0),
             arrayOf(0,0,0,2,0,0,6,0,0)
         )
-        val result = dumbVer.removeUsedValues(index, hardBoard)
+        val result = SudokuSolver.removeUsedValues(index, hardBoard)
 
         assertEquals(expected.toList(), result)
     }

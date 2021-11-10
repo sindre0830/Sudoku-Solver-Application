@@ -9,10 +9,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.sudokusolver.dumbVer.removeCol
-import com.example.sudokusolver.dumbVer.removeRow
-import com.example.sudokusolver.dumbVer.removeUsedValues
-import com.example.sudokusolver.dumbVer.solve
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
 
 class MainActivity : ComponentActivity( ) {
@@ -40,6 +36,7 @@ class MainActivity : ComponentActivity( ) {
         )
 
         // works but unbearably slowx3 - 17 filled squares
+        // 2:07
         val hardestBoard= arrayOf(
             arrayOf(0,0,0,7,0,0,0,0,0),
             arrayOf(1,0,0,0,0,0,0,0,0),
@@ -53,6 +50,7 @@ class MainActivity : ComponentActivity( ) {
         )
 
         // works but unbearably slow - 17 filled squares
+        // 1 min
         val hardBoard = arrayOf(
             arrayOf(0,0,0,8,0,1,0,0,0),
             arrayOf(0,0,0,0,0,0,4,3,0),
@@ -66,6 +64,7 @@ class MainActivity : ComponentActivity( ) {
         )
 
         // 21 numbers - "impossible" on website
+        // 1 sec
         val mediumHard = arrayOf(
             arrayOf(0,3,0,0,0,0,9,0,0),
             arrayOf(0,0,6,0,0,0,0,0,0),
@@ -119,10 +118,9 @@ class MainActivity : ComponentActivity( ) {
         //test.fill()
         // threading - fixes freeze at least
         Thread {
-            val result = solve(0, mediumEasy)
-            for (i in result.first.indices) {
-                Log.i("Board: ", result.first[i].contentToString())
-            }
+            val result = SudokuSolver.solve(mediumHard)
+            SudokuSolver.printBoard(result.first)
+
             Log.i("Solved: ", result.second.toString())
         }.start()
     }
