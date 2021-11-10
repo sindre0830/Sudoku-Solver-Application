@@ -30,11 +30,13 @@ fun Header(
 }
 
 @Composable
-fun HistoryIcon() {
+fun HistoryIcon(
+    modifier: Modifier = Modifier
+) {
     Icon(
         Icons.Rounded.History,
         contentDescription = stringResource(id = R.string.header_history_icon_description),
-        modifier = Modifier.size(32.dp)
+        modifier = modifier.size(32.dp)
     )
 }
 

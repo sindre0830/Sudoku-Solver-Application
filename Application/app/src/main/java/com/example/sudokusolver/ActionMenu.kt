@@ -16,7 +16,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sudokusolver.ui.theme.ColorBoxSelected
 
 data class ActionMenuItem(
     val icon: ImageVector,
@@ -24,7 +23,7 @@ data class ActionMenuItem(
     val handleClick: () -> Unit
 )
 
-data class HistoryItem(
+data class CurrentGameHistoryItem(
     val newValue: Int,
     val oldValue: Int,
     val sudokuItem: Int,
@@ -60,23 +59,24 @@ fun ActionMenu(actionMenuItems: List<ActionMenuItem>) {
 
 fun handleActionMenuItems(
     sudokuItemClicked: Int,
-    boardSize: Int,
-    history: SnapshotStateList<HistoryItem>,
+    board: List<SudokuBoardItem>,
+    currentGameHistory: SnapshotStateList<CurrentGameHistoryItem>,
     startImageLoadingActivity: () -> Unit,
     mutateBoard: mutateBoardFn,
-    mutateBoardNumber: mutateBoardNumberFn
+    mutateBoardNumber: mutateBoardNumberFn,
+    addSudokuBoardAsSolved: (List<Int>) -> Unit
 ): List<ActionMenuItem> {
     return listOf(
         ActionMenuItem(
             icon = Icons.Rounded.Clear,
             contentDescriptionResourceId = R.string.action_menu_icon_description_clear,
-            handleClick = { clearSudokuBoard(boardSize, mutateBoard) },
+            handleClick = { clearSudokuBoard(board.size, mutateBoard) },
         ),
         ActionMenuItem(
             icon = Icons.Rounded.Undo,
             contentDescriptionResourceId = R.string.action_menu_icon_description_remove,
             handleClick = {
-                undoOperation(mutateBoardNumber, history)
+                undoOperation(mutateBoardNumber, currentGameHistory)
             },
         ),
         ActionMenuItem(
@@ -94,7 +94,16 @@ fun handleActionMenuItems(
         ActionMenuItem(
             icon = Icons.Rounded.Calculate,
             contentDescriptionResourceId = R.string.action_menu_icon_description_solve,
-            handleClick = {}
+            handleClick = {
+                // TODO: Add sudoku solver here
+
+                // Add is solved fun
+                fun isSolved() = true
+                // Only add to history if solved
+                if (isSolved()) {
+                    addSudokuBoardAsSolved(board.map { it.number })
+                }
+            }
 
         )
     )
@@ -119,7 +128,7 @@ fun clearSudokuBoard(boardSize: Int, mutateBoard: mutateBoardFn) {
 
 fun undoOperation(
     mutateBoardNumber: mutateBoardNumberFn,
-    history: SnapshotStateList<HistoryItem>
+    history: SnapshotStateList<CurrentGameHistoryItem>
 ) {
     if (history.isNotEmpty()) {
         val historyItem = history[history.lastIndex]

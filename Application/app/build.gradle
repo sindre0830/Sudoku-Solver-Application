@@ -79,4 +79,7 @@ dependencies {
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
+    // Used for saving board history as preferences by serializing list to json string
+    implementation 'com.google.code.gson:gson:2.8.9'
+
 }

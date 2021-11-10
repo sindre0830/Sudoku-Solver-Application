@@ -17,4 +17,5 @@
 
     <string name="display_photo_icon_description_accept">Accept photo</string>
     <string name="display_photo_icon_description_retake_photo">Retake photo</string>
+    <string name="title_activity_history">HistoryActivity</string>
 </resources>
