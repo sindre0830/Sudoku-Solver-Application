@@ -27,10 +27,8 @@ import com.example.sudokusolver.ui.theme.SudokuSolverTheme
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -197,8 +195,8 @@ class MainActivity : ComponentActivity() {
         dataStore.edit { pref ->
             val historyEntries = loadBoardHistory()
             historyEntries.add(
-                PreviousGamesHistoryItems(
-                    SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(Date()),
+                PreviousGamesHistoryItem(
+                    Date(),
                     board
                 )
             )
@@ -206,12 +204,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun loadBoardHistory(): MutableList<PreviousGamesHistoryItems> {
+    private suspend fun loadBoardHistory(): MutableList<PreviousGamesHistoryItem> {
         val pref = dataStore.data.first()
         val historyStr = pref[SUDOKU_BOARD_HISTORY] ?: return mutableListOf()
         val gson = Gson()
         val historyEntriesType =
-            object : TypeToken<MutableList<PreviousGamesHistoryItems>>() {}.type
+            object : TypeToken<MutableList<PreviousGamesHistoryItem>>() {}.type
         return gson.fromJson(
             historyStr,
             historyEntriesType
