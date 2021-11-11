@@ -134,16 +134,14 @@ fun LoadImageFromGalleryBtn() {
         val predictionOutput = recognizer.predictionOutput
 
         Log.d("OpenCV", predictionOutput.toString())
-        recognizer.setImageFromBitmap(bitmap)
 
-        // Uncomment to debug
-       // DebugImage(recognizer.debugImage)
-        context.startActivity(
+        /*context.startActivity(
             Intent(context, MainActivity::class.java).putIntegerArrayListExtra(
                 SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
             )
-        )
-
+        )*/
+        // Uncomment to debug
+        DebugImage(recognizer.debugImage)
     }
 }
 
