@@ -267,19 +267,21 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //perform preprocessing of image
         val matrix = getBoardMatrix()
         convertToGrayscale(matrix)
+        performAdaptiveThresholding(matrix, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, 9, 7.0)
         performBitwiseNot(matrix)
-        performThresholding(matrix, 130.0)
         //iterate through each cell and predict if there is a digit inside
         for (cellIndex in cellPositions.indices) {
             val cell = extractAreaFromMatrix(matrix, cellPositions[cellIndex])
-            val contours = getContours(cell, Imgproc.RETR_CCOMP)
+            val contours = getContours(cell, Imgproc.RETR_EXTERNAL)
+            //get largest contour area that isn't the grid
+            var largestContourArea = 0.0
             var index = -1
-            //iterate through contours in cell and break at first contour area that could be digit
             for (i in contours.indices) {
-                val area = Imgproc.boundingRect(contours[i])
-                if (!(area.x < 4 || area.y < 4 || area.height < 4 || area.width < 4)) {
+                val rect = Imgproc.boundingRect(contours[i])
+                val contourArea = Imgproc.contourArea(contours[i])
+                if (!(rect.x < 4 || rect.y < 4 || rect.height < 4 || rect.width < 4) && largestContourArea < contourArea) {
                     index = i
-                    break
+                    largestContourArea = contourArea
                 }
             }
             //branch if digit was found in cell and predict
@@ -379,7 +381,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         var highestAccuracy = 0.0F
         var prediction = 0
         for (i in predictions.indices) {
-            if (predictions[i] > highestAccuracy) {
+            if (i != 0 && predictions[i] > highestAccuracy) {
                 highestAccuracy = predictions[i]
                 prediction = i
             }
