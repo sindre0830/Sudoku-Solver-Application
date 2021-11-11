@@ -13,6 +13,7 @@ import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -195,28 +196,40 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
 
     private fun getCellPositionsByContours(): List<Rect> {
         //perform preprocessing of image
-        val boardImage = getBoardMatrix()
+        var boardImage = getBoardMatrix()
         convertToGrayscale(boardImage)
-        performAdaptiveThresholding(boardImage, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, 11, 2.0)
-        performBitwiseNot(boardImage)
+        Imgproc.Canny(boardImage, boardImage, 30.0, 90.0, 3, true)
         performDilation(boardImage)
-        //debug matrix
-        // setDebugImage(boardImage)
-        //iterate through contours and store their positions if they are within acceptable cell area
+        //set matrix data
         val cellWidth = boardImage.width() / 9
         val cellHeight = boardImage.height() / 9
-        val threshold = 1.10
-        val contours = getContours(boardImage, Imgproc.RETR_LIST)
+        val thresholdUp = 1.20
+        val thresholdDown = abs(thresholdUp - 2)
+        val contours = getContours(boardImage, Imgproc.RETR_TREE)
         val cellAreas = mutableListOf<Rect>()
+        val bufferContours = mutableListOf<MatOfPoint>()
+        //iterate through contours and store their positions if they are within acceptable cell area
         for (i in contours.indices) {
             val cellArea = Imgproc.boundingRect(contours[i])
-            if (cellArea.width <= cellWidth * threshold && cellArea.height <= cellHeight * threshold) {
-                cellAreas.add(cellArea)
+            //branch if area is within cell limits
+            if (cellArea.width <= cellWidth * thresholdUp && cellArea.height <= cellHeight * thresholdUp && cellArea.width >= cellWidth * thresholdDown && cellArea.height >= cellHeight * thresholdDown) {
+                //branch if first cell isn't set yet
+                if (cellAreas.isEmpty()) {
+                    cellAreas.add(cellArea)
+                    bufferContours.add(contours[i])
+                } else {
+                    //branch if area is not too close to another cell
+                    if (!cellAreas.any { cellArea.x <= it.x + (cellWidth / 4) && cellArea.x >= it.x - (cellWidth / 4) && cellArea.y <= it.y + (cellHeight / 4) && cellArea.y >= it.y - (cellHeight / 4) }) {
+                        cellAreas.add(cellArea)
+                        bufferContours.add(contours[i])
+                    }
+                }
             }
         }
-        //only keep the contours with the largest areas (presumably the cells)
-        cellAreas.sortByDescending { it.area() }
-        cellAreas.subList(81, cellAreas.size).clear()
+        //draw contours for debugging
+        // val debug = getBoardMatrix()
+        // Imgproc.drawContours(debug, bufferContours, -1, Scalar(0.0, 0.0, 255.0), 1)
+        // setDebugImage(debug)
         //sort cell areas by y position and iterate through list to sort them by their respected position on the board
         cellAreas.sortBy { it.y }
         for (row in 0..8) {
@@ -229,7 +242,9 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
                 cellAreas[row * 9 + col] = cellAreasBuffer[col]
             }
         }
+        //clean up
         boardImage.release()
+        contours.forEach { it.release() }
         return cellAreas
     }
 
@@ -252,19 +267,21 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //perform preprocessing of image
         val matrix = getBoardMatrix()
         convertToGrayscale(matrix)
+        performAdaptiveThresholding(matrix, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, 9, 7.0)
         performBitwiseNot(matrix)
-        performThresholding(matrix, 130.0)
         //iterate through each cell and predict if there is a digit inside
         for (cellIndex in cellPositions.indices) {
             val cell = extractAreaFromMatrix(matrix, cellPositions[cellIndex])
-            val contours = getContours(cell, Imgproc.RETR_CCOMP)
+            val contours = getContours(cell, Imgproc.RETR_EXTERNAL)
+            //get largest contour area that isn't the grid
+            var largestContourArea = 0.0
             var index = -1
-            //iterate through contours in cell and break at first contour area that could be digit
             for (i in contours.indices) {
-                val area = Imgproc.boundingRect(contours[i])
-                if (!(area.x < 4 || area.y < 4 || area.height < 4 || area.width < 4)) {
+                val rect = Imgproc.boundingRect(contours[i])
+                val contourArea = Imgproc.contourArea(contours[i])
+                if (!(rect.x < 4 || rect.y < 4 || rect.height < 4 || rect.width < 4) && largestContourArea < contourArea) {
                     index = i
-                    break
+                    largestContourArea = contourArea
                 }
             }
             //branch if digit was found in cell and predict
@@ -364,7 +381,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         var highestAccuracy = 0.0F
         var prediction = 0
         for (i in predictions.indices) {
-            if (predictions[i] > highestAccuracy) {
+            if (i != 0 && predictions[i] > highestAccuracy) {
                 highestAccuracy = predictions[i]
                 prediction = i
             }
