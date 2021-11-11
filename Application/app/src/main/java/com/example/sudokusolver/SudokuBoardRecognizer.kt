@@ -81,7 +81,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
 
     private fun performGaussianBlur(matrix: Mat) {
         val bufferMatrix = generateBuffer(matrix)
-        Imgproc.GaussianBlur(bufferMatrix, matrix, Size(9.0, 9.0), 0.0)
+        Imgproc.GaussianBlur(bufferMatrix, matrix, Size(11.0, 11.0), 0.0)
         bufferMatrix.release()
     }
 
