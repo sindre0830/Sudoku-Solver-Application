@@ -26,6 +26,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     //generate list of 81 zeros representing an empty board
     var predictionOutput = MutableList(81) { 0 }
     lateinit var debugImage: Bitmap
+    var flagDebugActivity = false
 
     fun execute() {
         //check if dependencies has been loaded
@@ -199,8 +200,8 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         performAdaptiveThresholding(boardImage, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, 11, 2.0)
         performBitwiseNot(boardImage)
         performDilation(boardImage)
-        // Uncomment for debugging
-        setDebugImage(boardImage)
+        //debug matrix
+        // setDebugImage(boardImage)
         //iterate through contours and store their positions if they are within acceptable cell area
         val cellWidth = boardImage.width() / 9
         val cellHeight = boardImage.height() / 9
@@ -389,6 +390,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     fun setDebugImage(matrix: Mat) {
         this.debugImage = Bitmap.createBitmap(matrix.width(), matrix.height(), Bitmap.Config.ARGB_8888)
         Utils.matToBitmap(matrix, this.debugImage)
+        flagDebugActivity = true
     }
 
     fun setImageFromResource(resource: Int) {
