@@ -200,8 +200,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         performBitwiseNot(boardImage)
         performDilation(boardImage)
         // Uncomment for debugging
-        this.debugImage = Bitmap.createBitmap(boardImage.width(), boardImage.height(), Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(boardImage, this.debugImage)
+        setDebugImage(boardImage)
         //iterate through contours and store their positions if they are within acceptable cell area
         val cellWidth = boardImage.width() / 9
         val cellHeight = boardImage.height() / 9
@@ -385,6 +384,11 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         matrix.copyTo(bufferMatrix)
         matrix.release()
         return bufferMatrix
+    }
+
+    fun setDebugImage(matrix: Mat) {
+        this.debugImage = Bitmap.createBitmap(matrix.width(), matrix.height(), Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(matrix, this.debugImage)
     }
 
     fun setImageFromResource(resource: Int) {
