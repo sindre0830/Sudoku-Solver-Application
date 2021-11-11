@@ -52,7 +52,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //perform preprocessing of image
         convertToGrayscale(fullImage)
         performGaussianBlur(fullImage)
-        performAdaptiveThresholding(fullImage, 11, 2.0)
+        performAdaptiveThresholding(fullImage, Imgproc.ADAPTIVE_THRESH_MEAN_C xor Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, 5, 2.0)
         performBitwiseNot(fullImage)
         performDilation(fullImage)
         //get board area in the image (finds largest rectangle in the image)
@@ -85,13 +85,13 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         bufferMatrix.release()
     }
 
-    private fun performAdaptiveThresholding(matrix: Mat, blockSize: Int, constSubtraction: Double) {
+    private fun performAdaptiveThresholding(matrix: Mat, method: Int, blockSize: Int, constSubtraction: Double) {
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.adaptiveThreshold(
             bufferMatrix,
             matrix,
             255.0,
-            Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,
+            method,
             Imgproc.THRESH_BINARY,
             blockSize,
             constSubtraction
@@ -196,7 +196,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //perform preprocessing of image
         val boardImage = getBoardMatrix()
         convertToGrayscale(boardImage)
-        performAdaptiveThresholding(boardImage, 11, 2.0)
+        performAdaptiveThresholding(boardImage, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, 11, 2.0)
         performBitwiseNot(boardImage)
         performDilation(boardImage)
         // Uncomment for debugging
