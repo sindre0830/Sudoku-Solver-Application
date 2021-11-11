@@ -26,6 +26,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     //generate list of 81 zeros representing an empty board
     var predictionOutput = MutableList(81) { 0 }
     lateinit var debugImage: Bitmap
+    var flagDebugActivity = false
 
     fun execute() {
         //check if dependencies has been loaded
@@ -52,7 +53,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //perform preprocessing of image
         convertToGrayscale(fullImage)
         performGaussianBlur(fullImage)
-        performAdaptiveThresholding(fullImage, 11, 2.0)
+        performAdaptiveThresholding(fullImage, Imgproc.ADAPTIVE_THRESH_MEAN_C xor Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, 5, 2.0)
         performBitwiseNot(fullImage)
         performDilation(fullImage)
         //get board area in the image (finds largest rectangle in the image)
@@ -81,17 +82,17 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
 
     private fun performGaussianBlur(matrix: Mat) {
         val bufferMatrix = generateBuffer(matrix)
-        Imgproc.GaussianBlur(bufferMatrix, matrix, Size(9.0, 9.0), 0.0)
+        Imgproc.GaussianBlur(bufferMatrix, matrix, Size(11.0, 11.0), 0.0)
         bufferMatrix.release()
     }
 
-    private fun performAdaptiveThresholding(matrix: Mat, blockSize: Int, constSubtraction: Double) {
+    private fun performAdaptiveThresholding(matrix: Mat, method: Int, blockSize: Int, constSubtraction: Double) {
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.adaptiveThreshold(
             bufferMatrix,
             matrix,
             255.0,
-            Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,
+            method,
             Imgproc.THRESH_BINARY,
             blockSize,
             constSubtraction
@@ -196,11 +197,11 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         //perform preprocessing of image
         val boardImage = getBoardMatrix()
         convertToGrayscale(boardImage)
-        performAdaptiveThresholding(boardImage, 11, 2.0)
+        performAdaptiveThresholding(boardImage, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, 11, 2.0)
         performBitwiseNot(boardImage)
         performDilation(boardImage)
-        // Uncomment for debugging
-        setDebugImage(boardImage)
+        //debug matrix
+        // setDebugImage(boardImage)
         //iterate through contours and store their positions if they are within acceptable cell area
         val cellWidth = boardImage.width() / 9
         val cellHeight = boardImage.height() / 9
@@ -389,6 +390,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     fun setDebugImage(matrix: Mat) {
         this.debugImage = Bitmap.createBitmap(matrix.width(), matrix.height(), Bitmap.Config.ARGB_8888)
         Utils.matToBitmap(matrix, this.debugImage)
+        flagDebugActivity = true
     }
 
     fun setImageFromResource(resource: Int) {

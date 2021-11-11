@@ -135,13 +135,15 @@ fun LoadImageFromGalleryBtn() {
 
         Log.d("OpenCV", predictionOutput.toString())
 
-        /*context.startActivity(
-            Intent(context, MainActivity::class.java).putIntegerArrayListExtra(
-                SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
+        if (recognizer.flagDebugActivity) {
+            DebugImage(recognizer.debugImage)
+        } else {
+            context.startActivity(
+                Intent(context, MainActivity::class.java).putIntegerArrayListExtra(
+                    SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
+                )
             )
-        )*/
-        // Uncomment to debug
-        DebugImage(recognizer.debugImage)
+        }
     }
 }
 
