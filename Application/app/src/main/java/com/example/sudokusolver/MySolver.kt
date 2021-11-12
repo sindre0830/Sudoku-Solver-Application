@@ -17,18 +17,21 @@ object SudokuSolver {
 
     var grid = arrayOf<Array<Int>>()
     // Own function - fills grid from list we pass in
-    fun fill(array: Array<Array<Int>>) {
-        grid = array
+    fun fill(array: Array<Int>) {
+        grid = parse1Dto2D(array)
     }
+
     fun printBoard(board: Array<Array<Int>>) {
         for (i in board.indices) {
             Log.i("Board: ", board[i].contentToString())
         }
     }
 
-    fun solve(board: Array<Array<Int>>): Pair<Array<Array<Int>>, Boolean> {
-        getIndex(board)
-        return traverse(0, board)
+    fun solve(): Pair<Array<Int>, Boolean> {
+        getIndex(grid)
+        var finalBoard = traverse(0, grid)
+        // transform to 1D
+        return Pair(parse2Dto1D(finalBoard.first), finalBoard.second)
     }
 
     fun getIndex(board: Array<Array<Int>>) {
@@ -51,9 +54,6 @@ object SudokuSolver {
 
     // gets pretty far but still not working, let's fix later!
     fun traverse(index: Int,  board: Array<Array<Int>>): Pair<Array<Array<Int>>, Boolean> {
-        // debugging
-        //Log.i("Index: ", index.toString())
-
         val range = removeUsedValues(indexList.elementAt(index).first, board)
         // check if we got a good board
         var result = Pair(board, status)
@@ -152,14 +152,24 @@ object SudokuSolver {
     private fun findBoxEnd(index: Int) = index + squareSides
 
     fun parse1Dto2D(oneD: Array<Int>): Array<Array<Int>> {
-        Log.i("Got here:", "oneD")
-        var newgrid = arrayOf<Array<Int>>()
-        for(i in oneD) {
+        var newgrid = Array(9) {
+            Array(9, {0})
+        }
+        for(i in oneD.indices) {
             var rowIndex = i / rows
             var colIndex = i % columns
-            newgrid[rowIndex][colIndex] = i
+            newgrid[rowIndex][colIndex] = oneD[i]
         }
         return newgrid
     }
 
+    fun parse2Dto1D(twoD: Array<Array<Int>>): Array<Int> {
+        var newgrid = Array(81) {0}
+        for(i in (0 until rows)) {
+            for (j in (0 until columns)) {
+                newgrid[i*(rows) + j] = twoD[i][j]
+            }
+        }
+        return newgrid
+    }
 }
