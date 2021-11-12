@@ -5,7 +5,8 @@ from preprocessing import (
     reshapeDataset,
     normalizeData,
     parseDatasetChars,
-    resizeImages
+    resizeImages,
+    convertToGrayscale
 )
 from model import (
     generateModel,
@@ -35,6 +36,7 @@ dataset = downloadDatasetMNIST()
 downloadDatasetChars()
 data, labels = parseDatasetChars()
 data = resizeImages(data)
+data = convertToGrayscale(data)
 xTrain, yTrain, xTest, yTest = reshapeDataset(dataset)
 xTrain, xTest = normalizeData(xTrain, xTest)
 print(data.shape)

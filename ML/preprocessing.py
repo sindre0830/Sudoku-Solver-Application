@@ -46,6 +46,14 @@ def resizeImages(images):
     return np.array(images)
 
 
+# Converts RGB images to Grayscale.
+def convertToGrayscale(images):
+    grayscale = np.zeros(images.shape[:-1])
+    for i in range(images.shape[0]): 
+        grayscale[i] = cv2.cvtColor(images[i].astype('float32'), cv2.COLOR_RGB2GRAY)
+    return grayscale
+
+
 # Reshape data to four dimensions and preform categorical on labels.
 def reshapeDataset(dataset):
     (xTrain, yTrain), (xTest, yTest) = dataset
