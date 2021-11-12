@@ -12,10 +12,11 @@
 
     <string name="image_loading_activity_icon_description_camera">Camera</string>
     <string name="image_loading_activity_icon_description_gallery">Gallery</string>
-    <string name="image_loading_activity_icon_description_random">Random board</string>
+    <string name="image_loading_activity_icon_description_sample_images">Sample images</string>
     <string name="title_activity_camera">CameraActivity</string>
 
     <string name="display_photo_icon_description_accept">Accept photo</string>
     <string name="display_photo_icon_description_retake_photo">Retake photo</string>
     <string name="title_activity_history">HistoryActivity</string>
+    <string name="title_activity_sample_images">SampleImagesActivity</string>
 </resources>

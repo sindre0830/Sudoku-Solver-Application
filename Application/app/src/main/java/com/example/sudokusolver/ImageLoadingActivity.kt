@@ -14,7 +14,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -25,7 +24,6 @@ import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -68,17 +66,27 @@ class ImageLoadingActivity : ComponentActivity() {
                                 }
                             )
                             LoadImageFromGalleryBtn()
-                            ButtonWithIcon(
-                                onClick = { /*TODO: Load hardcoded/random board*/ },
-                                icon = Icons.Rounded.Casino,
-                                descriptionResourceId = R.string.image_loading_activity_icon_description_random,
-                            )
+
+                            SampleBoardsBtn()
                         }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun SampleBoardsBtn() {
+    val context = LocalContext.current
+
+    ButtonWithIcon(
+        onClick = {
+            context.startActivity(Intent(context, SampleImagesActivity::class.java))
+        },
+        icon = Icons.Rounded.Casino,
+        descriptionResourceId = R.string.image_loading_activity_icon_description_sample_images,
+    )
 }
 
 @Composable
@@ -168,6 +176,7 @@ fun LaunchCameraBtn(
     )
 
 }
+
 
 fun imageUriToBitmap(context: Context, uri: Uri): Bitmap {
     return if (Build.VERSION.SDK_INT < 28) {
