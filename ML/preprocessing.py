@@ -6,6 +6,7 @@ import os
 import tarfile
 import cv2
 import numpy as np
+from skimage import transform
 
 
 # Download MNIST dataset.
@@ -35,10 +36,17 @@ def parseDatasetChars():
             for file in os.listdir("Data/Dataset/English/Fnt/" + directory):
                 data.append(cv2.imread("Data/Dataset/English/Fnt/" + directory + "/" + file))
                 labels.append(label)
-    return np.array(data), np.array(labels)
+    return data, np.array(labels)
 
 
-# Reshape data to four dimensions and perform categorical on labels.
+# Resize Chars74K images to match MNIST.
+def resizeImages(images):
+    for i in range(len(images)):
+        images[i] = np.array(transform.resize(images[i], (28, 28), mode="constant"))
+    return np.array(images)
+
+
+# Reshape data to four dimensions and preform categorical on labels.
 def reshapeDataset(dataset):
     (xTrain, yTrain), (xTest, yTest) = dataset
     xTrain = xTrain.reshape(xTrain.shape[0], xTrain.shape[1], xTrain.shape[2], 1).astype('float32')

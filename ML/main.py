@@ -4,7 +4,8 @@ from preprocessing import (
     downloadDatasetChars,
     reshapeDataset,
     normalizeData,
-    parseDatasetChars
+    parseDatasetChars,
+    resizeImages
 )
 from model import (
     generateModel,
@@ -33,8 +34,11 @@ if gpu_devices:
 dataset = downloadDatasetMNIST()
 downloadDatasetChars()
 data, labels = parseDatasetChars()
+data = resizeImages(data)
 xTrain, yTrain, xTest, yTest = reshapeDataset(dataset)
 xTrain, xTest = normalizeData(xTrain, xTest)
+print(data.shape)
+print(xTrain.shape)
 
 
 # generate sequential model and output model summary
