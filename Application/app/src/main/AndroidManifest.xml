@@ -16,6 +16,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SudokuSolver">
         <activity
+            android:name=".SampleImagesActivity"
+            android:exported="false"
+            android:label="@string/title_activity_sample_images"
+            android:theme="@style/Theme.SudokuSolver.NoActionBar" />
+        <activity
             android:name=".HistoryActivity"
             android:exported="false"
             android:label="@string/title_activity_history"

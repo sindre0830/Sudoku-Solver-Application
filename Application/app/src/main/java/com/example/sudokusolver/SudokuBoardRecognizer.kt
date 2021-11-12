@@ -411,11 +411,6 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         flagDebugActivity = true
     }
 
-    fun setImageFromResource(resource: Int) {
-        this.originalImage.release()
-        this.originalImage = Utils.loadResource(context, resource, Imgcodecs.IMREAD_COLOR + Imgcodecs.IMREAD_IGNORE_ORIENTATION)
-    }
-
     fun setImageFromBitmap(bitmap: Bitmap) {
         this.originalImage.release()
         Utils.bitmapToMat(bitmap, originalImage)
