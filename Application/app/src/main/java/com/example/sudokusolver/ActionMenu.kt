@@ -95,10 +95,12 @@ fun handleActionMenuItems(
             icon = Icons.Rounded.Calculate,
             contentDescriptionResourceId = R.string.action_menu_icon_description_solve,
             handleClick = {
-                // TODO: Add sudoku solver here
-
+                var solved = SudokuSolver.fill(board.map { it.number }.toTypedArray())
+                for (i in solved.first.indices) {
+                    mutateBoardNumber(i, solved.first[i])
+                }
                 // Add is solved fun
-                fun isSolved() = true
+                fun isSolved() = solved.second
                 // Only add to history if solved
                 if (isSolved()) {
                     addSudokuBoardAsSolved(board.map { it.number })

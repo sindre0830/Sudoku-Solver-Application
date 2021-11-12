@@ -16,9 +16,10 @@ object SudokuSolver {
     var maxIndex = 0
 
     var grid = arrayOf<Array<Int>>()
-    // Own function - fills grid from list we pass in
-    fun fill(array: Array<Int>) {
+
+    fun fill(array: Array<Int>): Pair<Array<Int>, Boolean> {
         grid = parse1Dto2D(array)
+        return(solve())
     }
 
     fun printBoard(board: Array<Array<Int>>) {
