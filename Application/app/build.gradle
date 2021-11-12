@@ -61,7 +61,9 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
     implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+    implementation 'androidx.benchmark:benchmark-common:1.0.0'
     testImplementation 'junit:junit:4.+'
+    testImplementation  "pl.pragmatists:JUnitParams:1.1.1"
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
@@ -78,5 +80,8 @@ dependencies {
     implementation "androidx.camera:camera-view:1.0.0-alpha30"
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Used for saving board history as preferences by serializing list to json string
+    implementation 'com.google.code.gson:gson:2.8.9'
 
 }

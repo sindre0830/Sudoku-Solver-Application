@@ -14,7 +14,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -25,13 +24,13 @@ import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
 import kotlinx.coroutines.launch
+import java.util.ArrayList
 
 class ImageLoadingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,17 +66,27 @@ class ImageLoadingActivity : ComponentActivity() {
                                 }
                             )
                             LoadImageFromGalleryBtn()
-                            ButtonWithIcon(
-                                onClick = { /*TODO: Load hardcoded/random board*/ },
-                                icon = Icons.Rounded.Casino,
-                                descriptionResourceId = R.string.image_loading_activity_icon_description_random,
-                            )
+
+                            SampleBoardsBtn()
                         }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun SampleBoardsBtn() {
+    val context = LocalContext.current
+
+    ButtonWithIcon(
+        onClick = {
+            context.startActivity(Intent(context, SampleImagesActivity::class.java))
+        },
+        icon = Icons.Rounded.Casino,
+        descriptionResourceId = R.string.image_loading_activity_icon_description_sample_images,
+    )
 }
 
 @Composable
@@ -112,9 +121,6 @@ fun LoadImageFromGalleryBtn() {
         mutableStateOf<Uri?>(null)
     }
     val context = LocalContext.current
-    val bitmap = remember {
-        mutableStateOf<Bitmap?>(null)
-    }
     val launcher = rememberLauncherForActivityResult(
         contract =
         ActivityResultContracts.GetContent()
@@ -128,13 +134,22 @@ fun LoadImageFromGalleryBtn() {
         descriptionResourceId = R.string.image_loading_activity_icon_description_gallery,
     )
     imageUri?.let { uri ->
-        bitmap.value = imageUriToBitmap(context, uri)
-        bitmap.value?.let { btm ->
-            // TODO: Remove this image. This image should be processed to an array of ints.
-            Image(
-                bitmap = btm.asImageBitmap(),
-                contentDescription = "image loaded",
-                modifier = Modifier.size(400.dp)
+        val bitmap = imageUriToBitmap(context, uri)
+        val recognizer = SudokuBoardRecognizer(context)
+        //recognizer.setImageFromResource(R.drawable.sudokuboard1)
+        recognizer.setImageFromBitmap(bitmap)
+        recognizer.execute()
+        val predictionOutput = recognizer.predictionOutput
+
+        Log.d("OpenCV", predictionOutput.toString())
+
+        if (recognizer.flagDebugActivity) {
+            DebugImage(recognizer.debugImage)
+        } else {
+            context.startActivity(
+                Intent(context, MainActivity::class.java).putIntegerArrayListExtra(
+                    SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
+                )
             )
         }
     }
@@ -162,6 +177,7 @@ fun LaunchCameraBtn(
 
 }
 
+
 fun imageUriToBitmap(context: Context, uri: Uri): Bitmap {
     return if (Build.VERSION.SDK_INT < 28) {
         MediaStore.Images
@@ -170,6 +186,8 @@ fun imageUriToBitmap(context: Context, uri: Uri): Bitmap {
     } else {
         val source = ImageDecoder
             .createSource(context.contentResolver, uri)
-        ImageDecoder.decodeBitmap(source)
+        ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+            decoder.isMutableRequired = true
+        }
     }
 }

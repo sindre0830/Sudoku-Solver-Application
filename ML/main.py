@@ -1,11 +1,16 @@
 # import local modules
 from preprocessing import (
-    downloadDataset,
+    downloadDatasetMNIST,
+    downloadDatasetChars,
+    parseDatasetChars,
     reshapeDataset,
-    normalizeData
+    normalizeData,
+    resizeImages,
+    convertToGrayscale,
+    prepareData
 )
 from model import (
-    generateModel,
+    generateModel2,
     trainModel,
     analyzeModel,
     plotResults,
@@ -28,24 +33,56 @@ if gpu_devices:
 
 
 # download MNIST dataset and perform preprocessing
-dataset = downloadDataset()
-xTrain, yTrain, xTest, yTest = reshapeDataset(dataset)
-xTrain, xTest = normalizeData(xTrain, xTest)
+xTrainMNIST, yTrainMNIST, xTestMNIST, yTestMNIST = downloadDatasetMNIST()
+xTrainMNIST = resizeImages(xTrainMNIST)
+xTestMNIST = resizeImages(xTestMNIST)
+xTrainMNIST, yTrainMNIST = reshapeDataset(xTrainMNIST, yTrainMNIST)
+xTestMNIST, yTestMNIST = reshapeDataset(xTestMNIST, yTestMNIST)
+xTrainMNIST = normalizeData(xTrainMNIST)
+xTestMNIST = normalizeData(xTestMNIST)
 
 
 # generate sequential model and output model summary
-model = generateModel()
-model.summary()
+modelMNIST = generateModel2()
+modelMNIST.summary()
 
 
 # train model
-model, results = trainModel(model, xTrain, yTrain, xTest, yTest)
+modelMNIST, resultsMNIST = trainModel(modelMNIST, xTrainMNIST, yTrainMNIST, xTestMNIST, yTestMNIST)
 
 
 # analyze model and plot results
-analyzeModel(model, xTest, yTest)
-plotResults(results)
+analyzeModel(modelMNIST, xTestMNIST, yTestMNIST)
+plotResults(resultsMNIST)
 
 
 # prompt user to save model
-saveModel(model)
+saveModel(modelMNIST, "model_mnist")
+
+
+# download Chars74K dataset and perform preprocessing
+downloadDatasetChars()
+dataChars, labelsChars = parseDatasetChars()
+dataChars = convertToGrayscale(dataChars)
+dataChars = resizeImages(dataChars)
+dataChars, labelsChars = reshapeDataset(dataChars, labelsChars)
+dataChars = normalizeData(dataChars)
+xTrainChars, yTrainChars, xTestChars, yTestChars = prepareData(dataChars, labelsChars)
+
+
+# generate sequential model and output model summary
+modelChars = generateModel2()
+modelChars.summary()
+
+
+# train model
+modelChars, resultsChars = trainModel(modelChars, xTrainChars, yTrainChars, xTestChars, yTestChars)
+
+
+# analyze model and plot results
+analyzeModel(modelChars, xTestChars, yTestChars)
+plotResults(resultsChars)
+
+
+# prompt user to save model
+saveModel(modelChars, "model_chars")

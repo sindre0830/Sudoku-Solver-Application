@@ -5,8 +5,8 @@
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="false" />
-    <uses-permission android:name="android.permission.CAMERA" />
 
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -15,6 +15,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SudokuSolver">
+        <activity
+            android:name=".SampleImagesActivity"
+            android:exported="false"
+            android:label="@string/title_activity_sample_images"
+            android:theme="@style/Theme.SudokuSolver.NoActionBar" />
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false"
+            android:label="@string/title_activity_history"
+            android:theme="@style/Theme.SudokuSolver.NoActionBar" />
         <activity
             android:name=".CameraActivity"
             android:exported="false"

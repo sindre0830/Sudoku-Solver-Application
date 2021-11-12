@@ -257,7 +257,21 @@ private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
                 }
                 Spacer(modifier = Modifier.padding(15.dp))
                 Button(
-                    onClick = { /*TODO: Handle processing of image*/ },
+                    onClick = {
+                        val predictionOutput = SudokuBoardRecognizer(context).also {
+                            it.setImageFromBitmap(btm)
+                            it.execute()
+                        }.predictionOutput
+
+
+                        Log.d("OpenCV", predictionOutput.toString())
+
+                        context.startActivity(
+                            Intent(context, MainActivity::class.java).putExtra(
+                                SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
+                            )
+                        )
+                    },
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Icon(
