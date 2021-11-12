@@ -1,8 +1,13 @@
 # import local modules
 from preprocessing import (
     downloadDatasetMNIST,
+    downloadDatasetChars,
+    parseDatasetChars,
     reshapeDataset,
-    normalizeData
+    normalizeData,
+    resizeImages,
+    convertToGrayscale,
+    prepareData
 )
 from model import (
     generateModel,
@@ -50,4 +55,32 @@ plotResults(resultsMNIST)
 
 
 # prompt user to save model
-saveModel(modelMNIST)
+saveModel(modelMNIST, "model_mnist")
+
+
+# download Chars74K dataset and perform preprocessing
+downloadDatasetChars()
+dataChars, labelsChars = parseDatasetChars()
+dataChars = resizeImages(dataChars)
+dataChars = convertToGrayscale(dataChars)
+dataChars, labelsChars = reshapeDataset(dataChars, labelsChars)
+dataChars = normalizeData(dataChars)
+xTrainChars, yTrainChars, xTestChars, yTestChars = prepareData(dataChars, labelsChars)
+
+
+# generate sequential model and output model summary
+modelChars = generateModel()
+modelChars.summary()
+
+
+# train model
+modelChars, resultsChars = trainModel(modelChars, xTrainChars, yTrainChars, xTestChars, yTestChars)
+
+
+# analyze model and plot results
+analyzeModel(modelChars, xTestChars, yTestChars)
+plotResults(resultsChars)
+
+
+# prompt user to save model
+saveModel(modelChars, "model_chars")

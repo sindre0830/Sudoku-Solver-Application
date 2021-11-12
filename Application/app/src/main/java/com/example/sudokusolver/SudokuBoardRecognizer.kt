@@ -3,7 +3,8 @@ package com.example.sudokusolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
-import com.example.sudokusolver.ml.Model
+import com.example.sudokusolver.ml.ModelMnist as Model
+//import com.example.sudokusolver.ml.ModelChars as Model
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.*

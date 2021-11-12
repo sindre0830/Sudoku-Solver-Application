@@ -82,4 +82,4 @@ def prepareData(data, labels):
         data, labels, 
         train_size=dict.TRAIN_SIZE, random_state = 0
     )
-    return xTrain, xTest, yTrain, yTest
+    return xTrain, yTrain, xTest, yTest
