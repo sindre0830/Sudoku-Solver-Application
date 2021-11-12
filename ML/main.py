@@ -10,7 +10,6 @@ from preprocessing import (
     prepareData
 )
 from model import (
-    generateModel,
     generateModel2,
     trainModel,
     analyzeModel,

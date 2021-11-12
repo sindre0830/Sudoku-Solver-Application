@@ -18,7 +18,10 @@ def generateModel():
     # source: https://medium.com/analytics-vidhya/deep-learning-project-handwritten-digit-recognition-using-python-26da7ed11d1c
     model = keras.models.Sequential([
         # layer 1
-        keras.layers.convolutional.Conv2D(filters=32, kernel_size=3, input_shape=(dict.IMAGE_SIZE, dict.IMAGE_SIZE, 1), activation='relu', kernel_initializer='he_uniform'),
+        keras.layers.convolutional.Conv2D(
+            filters=32, kernel_size=3, activation='relu', 
+            input_shape=(dict.IMAGE_SIZE, dict.IMAGE_SIZE, 1), kernel_initializer='he_uniform'
+        ),
         keras.layers.pooling.MaxPooling2D(pool_size=(2, 2)),
         # layer 2
         keras.layers.convolutional.Conv2D(filters=64, kernel_size=3, activation='relu', kernel_initializer='he_uniform'),
@@ -45,7 +48,10 @@ def generateModel2():
     # source: https://towardsdatascience.com/going-beyond-99-mnist-handwritten-digits-recognition-cfff96337392
     model = keras.models.Sequential([
         # Layer 1
-        keras.layers.convolutional.Conv2D(filters=32, kernel_size=5, strides=1, activation='relu', input_shape=(dict.IMAGE_SIZE, dict.IMAGE_SIZE, 1), kernel_regularizer=keras.regularizers.l2(0.0005)),
+        keras.layers.convolutional.Conv2D(
+            filters=32, kernel_size=5, strides=1, activation='relu', 
+            input_shape=(dict.IMAGE_SIZE, dict.IMAGE_SIZE, 1), kernel_regularizer=keras.regularizers.l2(0.0005)
+        ),
         # Layer 2
         keras.layers.convolutional.Conv2D(filters=32, kernel_size=5, strides=1, use_bias=False),
         # Layer 3
