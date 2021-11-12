@@ -23,7 +23,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private lateinit var model: Model
     private var originalImage = Mat()
     private var boardMatrix = Mat()
-    private val imageSize = Size(28.0, 28.0)
+    private val imageSize = Size(32.0, 32.0)
     private val inputBuffer = ByteBuffer.allocateDirect(4 * imageSize.width.toInt() * imageSize.height.toInt()).apply { order(ByteOrder.nativeOrder()) }
     //generate list of 81 zeros representing an empty board
     var predictionOutput = MutableList(81) { 0 }

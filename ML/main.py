@@ -34,6 +34,8 @@ if gpu_devices:
 
 # download MNIST dataset and perform preprocessing
 xTrainMNIST, yTrainMNIST, xTestMNIST, yTestMNIST = downloadDatasetMNIST()
+xTrainMNIST = resizeImages(xTrainMNIST)
+xTestMNIST = resizeImages(xTestMNIST)
 xTrainMNIST, yTrainMNIST = reshapeDataset(xTrainMNIST, yTrainMNIST)
 xTestMNIST, yTestMNIST = reshapeDataset(xTestMNIST, yTestMNIST)
 xTrainMNIST = normalizeData(xTrainMNIST)
@@ -61,8 +63,8 @@ saveModel(modelMNIST, "model_mnist")
 # download Chars74K dataset and perform preprocessing
 downloadDatasetChars()
 dataChars, labelsChars = parseDatasetChars()
-dataChars = resizeImages(dataChars)
 dataChars = convertToGrayscale(dataChars)
+dataChars = resizeImages(dataChars)
 dataChars, labelsChars = reshapeDataset(dataChars, labelsChars)
 dataChars = normalizeData(dataChars)
 xTrainChars, yTrainChars, xTestChars, yTestChars = prepareData(dataChars, labelsChars)

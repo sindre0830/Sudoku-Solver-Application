@@ -8,7 +8,6 @@ import os
 import tarfile
 import cv2
 import numpy as np
-from skimage import transform
 import sklearn.model_selection
 
 
@@ -45,15 +44,17 @@ def parseDatasetChars():
 
 # Resize Chars74K images to match MNIST.
 def resizeImages(images):
+    resizedImages = []
     for i in range(len(images)):
-        images[i] = np.array(transform.resize(images[i], (28, 28), mode="constant"))
-    return np.array(images)
+        resizedImages.append(cv2.resize(images[i], (dict.IMAGE_SIZE, dict.IMAGE_SIZE)))
+    return np.array(resizedImages)
 
 
 # Converts RGB images to Grayscale.
 def convertToGrayscale(images):
+    images = np.array(images)
     grayscale = np.zeros(images.shape[:-1])
-    for i in range(images.shape[0]): 
+    for i in range(images.shape[0]):
         grayscale[i] = cv2.cvtColor(images[i].astype('float32'), cv2.COLOR_RGB2GRAY)
     return grayscale
 
@@ -79,7 +80,7 @@ def combineDatasets(dataMNIST, dataChars, labelsMNIST, labelsChars):
 # Performs train-test-split
 def prepareData(data, labels):
     xTrain, xTest, yTrain, yTest = sklearn.model_selection.train_test_split(
-        data, labels, 
-        train_size=dict.TRAIN_SIZE, random_state = 0
+        data, labels,
+        train_size=dict.TRAIN_SIZE, random_state=0
     )
     return xTrain, yTrain, xTest, yTest
