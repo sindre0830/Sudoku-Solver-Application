@@ -1,6 +1,7 @@
 # import local modules
 from preprocessing import (
-    downloadDataset,
+    downloadDatasetMNIST,
+    downloadDatasetChars,
     reshapeDataset,
     normalizeData
 )
@@ -28,7 +29,8 @@ if gpu_devices:
 
 
 # download MNIST dataset and perform preprocessing
-dataset = downloadDataset()
+dataset = downloadDatasetMNIST()
+downloadDatasetChars()
 xTrain, yTrain, xTest, yTest = reshapeDataset(dataset)
 xTrain, xTest = normalizeData(xTrain, xTest)
 

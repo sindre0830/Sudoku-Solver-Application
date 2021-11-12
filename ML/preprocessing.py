@@ -1,11 +1,26 @@
 # import foreign modules
 from tensorflow.keras.datasets import mnist
 import keras.utils.np_utils
+import requests
+import os
+import tarfile
 
 
 # Download MNIST dataset.
-def downloadDataset():
+def downloadDatasetMNIST():
     return mnist.load_data()
+
+
+# Download Chars74K dataset.
+def downloadDatasetChars():
+    if os.path.exists('Data/Dataset/English') is not True:
+        os.mkdir('Data/Dataset')
+        req = requests.get('http://www.ee.surrey.ac.uk/CVSSP/demos/chars74k/EnglishFnt.tgz', allow_redirects=True)
+        open('Data/Dataset/compressedData.tgz', 'wb').write(req.content)
+        with tarfile.open('Data/Dataset/compressedData.tgz', 'r:*') as file:
+            file.extractall('Data/Dataset')
+            file.close()
+        os.remove('Data/Dataset/compressedData.tgz')
 
 
 # Reshape data to four dimensions and perform categorical on labels.
