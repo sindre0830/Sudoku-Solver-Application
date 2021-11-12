@@ -4,6 +4,8 @@ import keras.utils.np_utils
 import requests
 import os
 import tarfile
+import cv2
+import numpy as np
 
 
 # Download MNIST dataset.
@@ -21,6 +23,19 @@ def downloadDatasetChars():
             file.extractall('Data/Dataset')
             file.close()
         os.remove('Data/Dataset/compressedData.tgz')
+
+
+# Parse Chars74K dataset.
+def parseDatasetChars():
+    data = []
+    labels = []
+    for directory in os.listdir("Data/Dataset/English/Fnt"):
+        label = int(directory[-3:]) - 1
+        if label in range(0, 10):
+            for file in os.listdir("Data/Dataset/English/Fnt/" + directory):
+                data.append(cv2.imread("Data/Dataset/English/Fnt/" + directory + "/" + file))
+                labels.append(label)
+    return np.array(data), np.array(labels)
 
 
 # Reshape data to four dimensions and perform categorical on labels.

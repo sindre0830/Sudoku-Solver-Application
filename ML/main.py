@@ -3,7 +3,8 @@ from preprocessing import (
     downloadDatasetMNIST,
     downloadDatasetChars,
     reshapeDataset,
-    normalizeData
+    normalizeData,
+    parseDatasetChars
 )
 from model import (
     generateModel,
@@ -31,6 +32,7 @@ if gpu_devices:
 # download MNIST dataset and perform preprocessing
 dataset = downloadDatasetMNIST()
 downloadDatasetChars()
+data, labels = parseDatasetChars()
 xTrain, yTrain, xTest, yTest = reshapeDataset(dataset)
 xTrain, xTest = normalizeData(xTrain, xTest)
 
