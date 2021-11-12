@@ -1,3 +1,5 @@
+# import local modules
+import dictionary as dict
 # import foreign modules
 from tensorflow.keras.datasets import mnist
 import keras.utils.np_utils
@@ -7,11 +9,13 @@ import tarfile
 import cv2
 import numpy as np
 from skimage import transform
+import sklearn.model_selection
 
 
 # Download MNIST dataset.
 def downloadDatasetMNIST():
-    return mnist.load_data()
+    (xTrain, yTrain), (xTest, yTest) = mnist.load_data()
+    return xTrain, yTrain, xTest, yTest
 
 
 # Download Chars74K dataset.
@@ -55,17 +59,27 @@ def convertToGrayscale(images):
 
 
 # Reshape data to four dimensions and preform categorical on labels.
-def reshapeDataset(dataset):
-    (xTrain, yTrain), (xTest, yTest) = dataset
-    xTrain = xTrain.reshape(xTrain.shape[0], xTrain.shape[1], xTrain.shape[2], 1).astype('float32')
-    xTest = xTest.reshape(xTest.shape[0], xTest.shape[1], xTest.shape[2], 1).astype('float32')
-    yTrain = keras.utils.np_utils.to_categorical(yTrain)
-    yTest = keras.utils.np_utils.to_categorical(yTest)
-    return xTrain, yTrain, xTest, yTest
+def reshapeDataset(data: np.array, labels: np.array):
+    data = data.reshape(data.shape[0], data.shape[1], data.shape[2], 1).astype('float32')
+    labels = keras.utils.np_utils.to_categorical(labels)
+    return data, labels
 
 
 # Normalize data between 0 and 1.
-def normalizeData(xTrain, xTest):
-    xTrain = xTrain / 255.0
-    xTest = xTest / 255.0
-    return xTrain, xTest
+def normalizeData(data):
+    return data / 255.0
+
+
+def combineDatasets(dataMNIST, dataChars, labelsMNIST, labelsChars):
+    data = np.concatenate((dataMNIST, dataChars))
+    labels = np.concatenate((labelsMNIST, labelsChars))
+    return data, labels
+
+
+# Performs train-test-split
+def prepareData(data, labels):
+    xTrain, xTest, yTrain, yTest = sklearn.model_selection.train_test_split(
+        data, labels, 
+        train_size=dict.TRAIN_SIZE, random_state = 0
+    )
+    return xTrain, xTest, yTrain, yTest

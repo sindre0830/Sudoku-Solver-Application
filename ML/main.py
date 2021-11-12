@@ -1,12 +1,8 @@
 # import local modules
 from preprocessing import (
     downloadDatasetMNIST,
-    downloadDatasetChars,
     reshapeDataset,
-    normalizeData,
-    parseDatasetChars,
-    resizeImages,
-    convertToGrayscale
+    normalizeData
 )
 from model import (
     generateModel,
@@ -32,30 +28,26 @@ if gpu_devices:
 
 
 # download MNIST dataset and perform preprocessing
-dataset = downloadDatasetMNIST()
-downloadDatasetChars()
-data, labels = parseDatasetChars()
-data = resizeImages(data)
-data = convertToGrayscale(data)
-xTrain, yTrain, xTest, yTest = reshapeDataset(dataset)
-xTrain, xTest = normalizeData(xTrain, xTest)
-print(data.shape)
-print(xTrain.shape)
+xTrainMNIST, yTrainMNIST, xTestMNIST, yTestMNIST = downloadDatasetMNIST()
+xTrainMNIST, yTrainMNIST = reshapeDataset(xTrainMNIST, yTrainMNIST)
+xTestMNIST, yTestMNIST = reshapeDataset(xTestMNIST, yTestMNIST)
+xTrainMNIST = normalizeData(xTrainMNIST)
+xTestMNIST = normalizeData(xTestMNIST)
 
 
 # generate sequential model and output model summary
-model = generateModel()
-model.summary()
+modelMNIST = generateModel()
+modelMNIST.summary()
 
 
 # train model
-model, results = trainModel(model, xTrain, yTrain, xTest, yTest)
+modelMNIST, resultsMNIST = trainModel(modelMNIST, xTrainMNIST, yTrainMNIST, xTestMNIST, yTestMNIST)
 
 
 # analyze model and plot results
-analyzeModel(model, xTest, yTest)
-plotResults(results)
+analyzeModel(modelMNIST, xTestMNIST, yTestMNIST)
+plotResults(resultsMNIST)
 
 
 # prompt user to save model
-saveModel(model)
+saveModel(modelMNIST)

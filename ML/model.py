@@ -93,15 +93,15 @@ def plotResults(results):
     plt.show()
 
 
-# Ask user to save model to disk in HDF5 format.
-def saveModel(model: keras.models.Sequential):
+# Ask user to save model to disk in HDF5 and tflite format.
+def saveModel(model: keras.models.Sequential, filename: str):
     inp = input("Do you want to save the model? Y/N: ")
     if inp.lower() == "y":
         # save model in HDF5 format
-        model.save("Data/model.h5")
+        model.save("Data/" + filename + ".h5")
         # convert model to tensorflow lite and save it
         # source: https://www.tensorflow.org/lite/convert/
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
         tflite_model = converter.convert()
-        with open("Data/model.tflite", "wb") as file:
+        with open("Data/" + filename + ".tflite", "wb") as file:
             file.write(tflite_model)
