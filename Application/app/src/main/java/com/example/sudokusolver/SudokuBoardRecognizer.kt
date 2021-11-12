@@ -405,7 +405,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         return bufferMatrix
     }
 
-    fun setDebugImage(matrix: Mat) {
+    private fun setDebugImage(matrix: Mat) {
         this.debugImage = Bitmap.createBitmap(matrix.width(), matrix.height(), Bitmap.Config.ARGB_8888)
         Utils.matToBitmap(matrix, this.debugImage)
         flagDebugActivity = true

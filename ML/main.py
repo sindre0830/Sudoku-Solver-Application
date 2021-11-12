@@ -11,6 +11,7 @@ from preprocessing import (
 )
 from model import (
     generateModel,
+    generateModel2,
     trainModel,
     analyzeModel,
     plotResults,
@@ -43,7 +44,7 @@ xTestMNIST = normalizeData(xTestMNIST)
 
 
 # generate sequential model and output model summary
-modelMNIST = generateModel()
+modelMNIST = generateModel2()
 modelMNIST.summary()
 
 
@@ -71,7 +72,7 @@ xTrainChars, yTrainChars, xTestChars, yTestChars = prepareData(dataChars, labels
 
 
 # generate sequential model and output model summary
-modelChars = generateModel()
+modelChars = generateModel2()
 modelChars.summary()
 
 

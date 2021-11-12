@@ -5,6 +5,8 @@ import keras.models
 import keras.layers.convolutional
 import keras.layers.pooling
 import keras.layers.core
+import keras.layers
+import keras.regularizers
 import numpy as np
 import sklearn.metrics
 import matplotlib.pyplot as plt
@@ -28,6 +30,66 @@ def generateModel():
         # layer 4
         keras.layers.core.Dense(units=100, activation='relu', kernel_initializer='he_uniform'),
         # layer 5
+        keras.layers.core.Dense(units=10, activation='softmax')
+    ])
+    model.compile(
+        optimizer='adam',
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+    return model
+
+
+# Generate convolutional neural network model.
+def generateModel2():
+    # source: https://towardsdatascience.com/going-beyond-99-mnist-handwritten-digits-recognition-cfff96337392
+    model = keras.models.Sequential([
+        # Layer 1
+        keras.layers.convolutional.Conv2D(filters=32, kernel_size=5, strides=1, activation='relu', input_shape=(dict.IMAGE_SIZE, dict.IMAGE_SIZE, 1), kernel_regularizer=keras.regularizers.l2(0.0005)),
+        # Layer 2
+        keras.layers.convolutional.Conv2D(filters=32, kernel_size=5, strides=1, use_bias=False),
+        # Layer 3
+        keras.layers.BatchNormalization(),
+        # — — — — — — — — — — — — — — — — #
+        keras.layers.Activation('relu'),
+        keras.layers.pooling.MaxPooling2D(pool_size=2, strides=2),
+        keras.layers.core.Dropout(0.25),
+        # — — — — — — — — — — — — — — — — #
+        # Layer 3
+        keras.layers.convolutional.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', kernel_regularizer=keras.regularizers.l2(0.0005)),
+        # Layer 4
+        keras.layers.convolutional.Conv2D(filters=64, kernel_size=3, strides=1, use_bias=False),
+        # Layer 5
+        keras.layers.BatchNormalization(),
+        # — — — — — — — — — — — — — — — — #
+        keras.layers.Activation('relu'),
+        keras.layers.pooling.MaxPooling2D(pool_size=2, strides=2),
+        keras.layers.core.Dropout(0.25),
+        keras.layers.core.Flatten(),
+        # — — — — — — — — — — — — — — — — #
+        # Layer 6
+        keras.layers.core.Dense(units=256, use_bias=False),
+        # Layer 7
+        keras.layers.BatchNormalization(),
+        # — — — — — — — — — — — — — — — — #
+        keras.layers.core.Activation('relu'),
+        # — — — — — — — — — — — — — — — — #
+        # Layer 8
+        keras.layers.core.Dense(units=128, use_bias=False),
+        # Layer 9
+        keras.layers.BatchNormalization(),
+        # — — — — — — — — — — — — — — — — #
+        keras.layers.core.Activation('relu'),
+        # — — — — — — — — — — — — — — — — #
+        # Layer 10
+        keras.layers.core.Dense(units=84, use_bias=False),
+        # Layer 11
+        keras.layers.BatchNormalization(),
+        # — — — — — — — — — — — — — — — — #
+        keras.layers.core.Activation('relu'),
+        keras.layers.core.Dropout(0.25),
+        # — — — — — — — — — — — — — — — — #
+        # Output
         keras.layers.core.Dense(units=10, activation='softmax')
     ])
     model.compile(
