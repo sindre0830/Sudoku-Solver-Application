@@ -3,7 +3,8 @@ package com.example.sudokusolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
-import com.example.sudokusolver.ml.Model
+import com.example.sudokusolver.ml.ModelMnist as Model
+//import com.example.sudokusolver.ml.ModelChars as Model
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.*
@@ -22,7 +23,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private lateinit var model: Model
     private var originalImage = Mat()
     private var boardMatrix = Mat()
-    private val imageSize = Size(28.0, 28.0)
+    private val imageSize = Size(32.0, 32.0)
     private val inputBuffer = ByteBuffer.allocateDirect(4 * imageSize.width.toInt() * imageSize.height.toInt()).apply { order(ByteOrder.nativeOrder()) }
     //generate list of 81 zeros representing an empty board
     var predictionOutput = MutableList(81) { 0 }
@@ -404,7 +405,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         return bufferMatrix
     }
 
-    fun setDebugImage(matrix: Mat) {
+    private fun setDebugImage(matrix: Mat) {
         this.debugImage = Bitmap.createBitmap(matrix.width(), matrix.height(), Bitmap.Config.ARGB_8888)
         Utils.matToBitmap(matrix, this.debugImage)
         flagDebugActivity = true
