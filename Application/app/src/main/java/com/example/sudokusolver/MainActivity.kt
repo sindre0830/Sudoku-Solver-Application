@@ -3,6 +3,7 @@ package com.example.sudokusolver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -178,6 +179,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        // Want to do our solves in a thread
+        //Thread {
+            //var test = SudokuSolver
+            //test.fill(arrayOf(0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 2, 0, 0, 8, 0, 3, 0, 0, 5, 0, 0, 8, 0, 0, 0, 5, 0, 0, 0, 2, 0, 4, 0, 9, 0, 3, 0, 9, 0, 0, 6, 0, 7, 0, 0, 2, 5, 0, 9, 0, 0, 0, 3, 0, 8, 0, 0, 3, 0, 0, 0, 9, 0, 0, 0, 7, 0, 9, 0, 4, 0, 5, 0))
+            //var result = test.solve()
+            //Log.i("Done: ", result.first.contentToString())
+        //}.start()
     }
 
     private suspend fun persistBoard(board: List<Int>) {
