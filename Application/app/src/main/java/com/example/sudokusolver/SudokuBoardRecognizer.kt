@@ -29,6 +29,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     var predictionOutput = MutableList(81) { 0 }
     lateinit var debugImage: Bitmap
     var flagDebugActivity = false
+    var flagError = false
 
     fun execute() {
         //check if dependencies has been loaded
@@ -38,9 +39,13 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         }
         //initialize Tensorflow Lite model
         model = Model.newInstance(context)
+        //set list to be empty
+        predictionOutput = MutableList(81) { 0 }
         //perform preprocessing
         extractBoard()
+        if (flagError) return
         val cellPositions = getCellPositionsByContours()
+        if (flagError) return
         computePredictionsOnCells(cellPositions)
         //clean up
         model.close()
@@ -60,6 +65,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         performDilation(fullImage)
         //get board area in the image (finds largest rectangle in the image)
         val boardCoordinates = findBoardCoordinates(fullImage)
+        if (flagError) return
         //crop and warp the sudoku board
         val boardImage = getOriginalImage()
         focusOnBoard(boardImage, boardCoordinates)
@@ -119,8 +125,13 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     }
 
     private fun findBoardCoordinates(matrix: Mat): BoardCoordinates {
-        //find contours
+        val boardCoordinates = BoardCoordinates()
+        //find contours and branch if an error occurred
         val contours = getContours(matrix, Imgproc.RETR_EXTERNAL)
+        if (contours.isEmpty()) {
+            flagError = true
+            return boardCoordinates
+        }
         //get largest contour area (presumably the sudoku board)
         var largestContourArea = 0.0
         var largestContourIndex = 0
@@ -139,7 +150,6 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         Imgproc.approxPolyDP(bufferCurve, approx, 0.015 * perimeter, true)
         //get each corners
         val corners = approx.toList()
-        val boardCoordinates = BoardCoordinates()
         //find top left, bottom left, bottom right, top right
         corners.sortBy { it.x + it.y }
         boardCoordinates.bottomLeft = corners[0]
@@ -226,6 +236,10 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
                     }
                 }
             }
+        }
+        if (bufferContours.size <= 80) {
+            flagError = true
+            return cellAreas
         }
         //draw contours for debugging
         // val debug = getBoardMatrix()
