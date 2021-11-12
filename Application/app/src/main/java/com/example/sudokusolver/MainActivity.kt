@@ -23,11 +23,13 @@ class MainActivity : ComponentActivity( ) {
             }
         }
         // Want to do our solves in a thread
-        Thread {
+        //val test = SudokuSolver.parse1Dto2D(arrayOf(1,1,1,0,0,0))
+        //print(test.contentToString())
+        //Thread {
             //val result = SudokuSolver.solve(exampleNameOfBoard)
             //replace with updating interface
             //SudokuSolver.printBoard(result.first)
-        }.start()
+        //}.start()
     }
 }
 

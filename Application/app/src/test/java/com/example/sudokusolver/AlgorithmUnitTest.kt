@@ -98,3 +98,18 @@ class ATest {
         arrayOf(73, arrayOf(1,4,5,7,8,9))
     )
 }
+
+@RunWith(JUnitParamsRunner::class)
+class BTest {
+    @Test
+    @Parameters(method = "easyParameters")
+    fun test_1Dto2D(board: Array<Int>, expected: Array<Array<Int>>) {
+
+        val result = SudokuSolver.parse1Dto2D(board)
+        assertEquals(expected, result)
+    }
+
+    fun easyParameters() = arrayOf(
+        arrayOf(1)
+    )
+}

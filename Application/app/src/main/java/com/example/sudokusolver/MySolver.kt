@@ -151,4 +151,15 @@ object SudokuSolver {
 
     private fun findBoxEnd(index: Int) = index + squareSides
 
+    fun parse1Dto2D(oneD: Array<Int>): Array<Array<Int>> {
+        Log.i("Got here:", "oneD")
+        var newgrid = arrayOf<Array<Int>>()
+        for(i in oneD) {
+            var rowIndex = i / rows
+            var colIndex = i % columns
+            newgrid[rowIndex][colIndex] = i
+        }
+        return newgrid
+    }
+
 }
