@@ -19,7 +19,7 @@ def generateModel():
     model = keras.models.Sequential([
         # layer 1
         keras.layers.convolutional.Conv2D(
-            filters=32, kernel_size=3, activation='relu', 
+            filters=32, kernel_size=3, activation='relu',
             input_shape=(dict.IMAGE_SIZE, dict.IMAGE_SIZE, 1), kernel_initializer='he_uniform'
         ),
         keras.layers.pooling.MaxPooling2D(pool_size=(2, 2)),
@@ -49,7 +49,7 @@ def generateModel2():
     model = keras.models.Sequential([
         # Layer 1
         keras.layers.convolutional.Conv2D(
-            filters=32, kernel_size=5, strides=1, activation='relu', 
+            filters=32, kernel_size=5, strides=1, activation='relu',
             input_shape=(dict.IMAGE_SIZE, dict.IMAGE_SIZE, 1), kernel_regularizer=keras.regularizers.l2(0.0005)
         ),
         # Layer 2
