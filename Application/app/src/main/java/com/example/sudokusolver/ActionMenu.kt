@@ -1,11 +1,19 @@
 package com.example.sudokusolver
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.rounded.Calculate
+import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.FileDownload
+import androidx.compose.material.icons.rounded.Undo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -50,12 +58,10 @@ fun ActionMenu(actionMenuItems: List<ActionMenuItem>) {
                     text = stringResource(item.contentDescriptionResourceId),
                     style = TextStyle(fontSize = 12.sp)
                 )
-
             }
         }
     }
 }
-
 
 fun handleActionMenuItems(
     sudokuItemClicked: Int,
