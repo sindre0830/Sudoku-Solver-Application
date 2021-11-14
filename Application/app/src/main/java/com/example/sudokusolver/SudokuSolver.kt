@@ -2,7 +2,6 @@
 package com.example.sudokusolver
 
 import android.util.Log
-import java.lang.Math.max
 import java.lang.Math.sqrt
 
 object SudokuSolver {
@@ -42,19 +41,19 @@ object SudokuSolver {
             rowI = i / rows
             colI = i % columns
             // only add it empty cell
-            if(board[rowI][colI] == 0) {
+            if (board[rowI][colI] == 0) {
                 indexList.add(Pair(i, removeUsedValues(i, board).count()))
             }
         }
         // Stops working here...
         // Both sortBy and sortByDescending get stuck in loops
         // But same logic works as long as they're sorted by boardindex...weird
-        //indexList.sortByDescending { it.second }
+        // indexList.sortByDescending { it.second }
         Log.i("size: ", indexList.count().toString())
     }
 
     // gets pretty far but still not working, let's fix later!
-    fun traverse(index: Int,  board: Array<Array<Int>>): Pair<Array<Array<Int>>, Boolean> {
+    fun traverse(index: Int, board: Array<Array<Int>>): Pair<Array<Array<Int>>, Boolean> {
         val range = removeUsedValues(indexList.elementAt(index).first, board)
         // check if we got a good board
         var result = Pair(board, status)
@@ -64,12 +63,12 @@ object SudokuSolver {
 
         for (candidateValue in range) {
             newBoard[rowIndex][colIndex] = candidateValue
-            if(index == indexList.count()-1) {
+            if (index == indexList.count() - 1) {
                 status = true
                 return Pair(newBoard, status)
             }
             var temp = traverse(index + 1, newBoard)
-            if(temp.second == true) {
+            if (temp.second == true) {
                 return temp
             }
         }
@@ -79,7 +78,7 @@ object SudokuSolver {
     }
 
     private fun copyArray(old: Array<Array<Int>>): Array<Array<Int>> {
-        val newArray: Array<Array<Int>> = Array<Array<Int>>(9){ Array<Int>(9) {0} }
+        val newArray: Array<Array<Int>> = Array<Array<Int>>(9) { Array<Int>(9) { 0 } }
         for (i in (0..8)) {
             newArray[i] = old[i].copyOf()
         }
@@ -90,7 +89,7 @@ object SudokuSolver {
         var rowIndex = index / rows
         var colIndex = index % columns
         // If square is prefilled, return only that value
-        if(board[rowIndex][colIndex] != 0) {
+        if (board[rowIndex][colIndex] != 0) {
             return listOf(board[rowIndex][colIndex])
         }
 
@@ -116,7 +115,7 @@ object SudokuSolver {
         return newRange
     }
 
-    fun removeCol (range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
+    fun removeCol(range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
         var colIndex = index % columns
         var newRange: MutableList<Int> = range
 
@@ -129,10 +128,10 @@ object SudokuSolver {
         return newRange
     }
 
-    fun removeSquare (range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
-        val rowStart = findBoxStart(index/rows)
+    fun removeSquare(range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
+        val rowStart = findBoxStart(index / rows)
         val rowEnd = findBoxEnd(rowStart)
-        val columnStart = findBoxStart(index%columns)
+        val columnStart = findBoxStart(index % columns)
         val columnEnd = findBoxEnd(columnStart)
 
         var newRange: MutableList<Int> = range
@@ -154,9 +153,9 @@ object SudokuSolver {
 
     fun parse1Dto2D(oneD: Array<Int>): Array<Array<Int>> {
         var newgrid = Array(9) {
-            Array(9, {0})
+            Array(9, { 0 })
         }
-        for(i in oneD.indices) {
+        for (i in oneD.indices) {
             var rowIndex = i / rows
             var colIndex = i % columns
             newgrid[rowIndex][colIndex] = oneD[i]
@@ -165,10 +164,10 @@ object SudokuSolver {
     }
 
     fun parse2Dto1D(twoD: Array<Array<Int>>): Array<Int> {
-        var newgrid = Array(81) {0}
-        for(i in (0 until rows)) {
+        var newgrid = Array(81) { 0 }
+        for (i in (0 until rows)) {
             for (j in (0 until columns)) {
-                newgrid[i*(rows) + j] = twoD[i][j]
+                newgrid[i * (rows) + j] = twoD[i][j]
             }
         }
         return newgrid
