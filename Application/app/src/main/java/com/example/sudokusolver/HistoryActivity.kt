@@ -3,8 +3,13 @@ package com.example.sudokusolver
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
@@ -20,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
 import java.io.Serializable
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 class HistoryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +75,6 @@ class HistoryActivity : ComponentActivity() {
 
 data class PreviousGamesHistoryItem(val date: Date, val board: List<Int>) : Serializable
 
-
 @Composable
 fun HistoryActivityItem(historyItem: PreviousGamesHistoryItem) {
     Row(
@@ -85,11 +89,11 @@ fun HistoryActivityItem(historyItem: PreviousGamesHistoryItem) {
             SudokuBoard(
                 items = historyItem.board.map { SudokuBoardItem(it) },
                 verticalLength = 9,
-                onItemClick = {})
+                onItemClick = {}
+            )
         }
 
         Spacer(modifier = Modifier.padding(20.dp))
         Text(text = SimpleDateFormat("M/dd/yyyy HH:mm:ss").format(historyItem.date))
-
     }
 }

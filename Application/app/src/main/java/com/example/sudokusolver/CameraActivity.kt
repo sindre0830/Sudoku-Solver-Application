@@ -1,49 +1,60 @@
 package com.example.sudokusolver
 
-import android.Manifest
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
 import androidx.camera.core.AspectRatio.RATIO_16_9
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
-import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
-import com.google.common.util.concurrent.ListenableFuture
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
+import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
 class CameraActivity : ComponentActivity() {
     private lateinit var outputDirectory: File
@@ -95,7 +106,8 @@ class CameraActivity : ComponentActivity() {
                                             CameraActivity::class.java
                                         ).setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
                                     )
-                                })
+                                }
+                            )
                         }
                     }
                 }
@@ -134,7 +146,8 @@ class CameraActivity : ComponentActivity() {
                     Log.d(TAG, "Photo capture succeeded: $savedUri")
                     setPhotoUri(savedUri)
                 }
-            })
+            }
+        )
     }
 
     private fun getOutputDirectory(): File {
@@ -186,15 +199,18 @@ fun CameraPreview(
                 scaleType = PreviewView.ScaleType.FILL_START
                 implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                 post {
-                    cameraProviderFuture.addListener(Runnable {
-                        val cameraProvider = cameraProviderFuture.get()
-                        bindPreview(
-                            cameraProvider,
-                            lifecycleOwner,
-                            this,
-                            imageCapture
-                        )
-                    }, ContextCompat.getMainExecutor(context))
+                    cameraProviderFuture.addListener(
+                        Runnable {
+                            val cameraProvider = cameraProviderFuture.get()
+                            bindPreview(
+                                cameraProvider,
+                                lifecycleOwner,
+                                this,
+                                imageCapture
+                            )
+                        },
+                        ContextCompat.getMainExecutor(context)
+                    )
                 }
             }
         }
@@ -213,10 +229,7 @@ fun CameraPreview(
             Text(text = "Capture Photo")
         }
     }
-
-
 }
-
 
 @Composable
 private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
@@ -263,7 +276,6 @@ private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
                             it.execute()
                         }.predictionOutput
 
-
                         Log.d("OpenCV", predictionOutput.toString())
 
                         context.startActivity(
@@ -279,7 +291,6 @@ private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
                         stringResource(id = R.string.display_photo_icon_description_accept)
                     )
                 }
-
             }
         }
     }

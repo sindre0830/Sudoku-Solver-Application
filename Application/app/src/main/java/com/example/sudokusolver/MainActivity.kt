@@ -3,11 +3,14 @@ package com.example.sudokusolver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.mutableStateListOf
@@ -30,7 +33,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.*
+import java.util.Date
 import kotlin.collections.ArrayList
 
 const val SUDOKU_BOARD_KEY = "sudoku_board"
@@ -46,7 +49,6 @@ typealias mutateBoardNumberFn = (index: Int, number: Int) -> Unit
 class MainActivity : ComponentActivity() {
     private val SUDOKU_BOARD = stringPreferencesKey(SUDOKU_BOARD_KEY)
     private val SUDOKU_BOARD_HISTORY = stringPreferencesKey(SUDOKU_BOARD_HISTORY_KEY)
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -180,12 +182,12 @@ class MainActivity : ComponentActivity() {
             }
         }
         // Want to do our solves in a thread
-        //Thread {
-            //var test = SudokuSolver
-            //test.fill(arrayOf(0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 2, 0, 0, 8, 0, 3, 0, 0, 5, 0, 0, 8, 0, 0, 0, 5, 0, 0, 0, 2, 0, 4, 0, 9, 0, 3, 0, 9, 0, 0, 6, 0, 7, 0, 0, 2, 5, 0, 9, 0, 0, 0, 3, 0, 8, 0, 0, 3, 0, 0, 0, 9, 0, 0, 0, 7, 0, 9, 0, 4, 0, 5, 0))
-            //var result = test.solve()
-            //Log.i("Done: ", result.first.contentToString())
-        //}.start()
+        // Thread {
+        // var test = SudokuSolver
+        // test.fill(arrayOf(0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 2, 0, 0, 8, 0, 3, 0, 0, 5, 0, 0, 8, 0, 0, 0, 5, 0, 0, 0, 2, 0, 4, 0, 9, 0, 3, 0, 9, 0, 0, 6, 0, 7, 0, 0, 2, 5, 0, 9, 0, 0, 0, 3, 0, 8, 0, 0, 3, 0, 0, 0, 9, 0, 0, 0, 7, 0, 9, 0, 4, 0, 5, 0))
+        // var result = test.solve()
+        // Log.i("Done: ", result.first.contentToString())
+        // }.start()
     }
 
     private suspend fun persistBoard(board: List<Int>) {
@@ -237,7 +239,6 @@ fun setupBoard(items: List<Int>): SnapshotStateList<SudokuBoardItem> {
     return list
 }
 
-
 fun updateBackgroundColor(
     newSudokuBox: Int,
     currentSudokuBox: Int,
@@ -257,12 +258,8 @@ fun updateBackgroundColor(
         newSudokuBox,
         ColorBoxSelected,
     )
-
 }
 
 fun isBoxWithinBoard(n: Int, boardSize: Int) = n in 0 until boardSize
 
-
 fun isValidSudokuNum(n: Int) = n in 0..9
-
-

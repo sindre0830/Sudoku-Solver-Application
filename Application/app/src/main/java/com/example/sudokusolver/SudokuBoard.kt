@@ -4,7 +4,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -14,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-
 
 data class SudokuBoardItem(
     val number: Int,
@@ -36,7 +40,6 @@ fun SudokuBoard(
     onItemClick: (index: Int) -> Unit,
 ) {
     validateBoard(items.map { it.number }, verticalLength)
-
 
     var currentItem = 0
 
@@ -76,7 +79,6 @@ fun isAxesSameNumber(items: List<Int>, verticalLength: Int) =
 
 // 0-9 is the only numbers accepted where 0 is empty/blank
 fun isValidSudokuNumbers(items: List<Int>): Boolean = items.all { it in 0..9 }
-
 
 @Composable
 fun RowScope.SudokuBoxItem(
