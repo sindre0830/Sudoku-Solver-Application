@@ -15,13 +15,31 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material.icons.rounded.Collections
 import androidx.compose.material.icons.rounded.PhotoCamera
-import androidx.compose.runtime.*
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -136,7 +154,7 @@ fun LoadImageFromGalleryBtn() {
     imageUri?.let { uri ->
         val bitmap = imageUriToBitmap(context, uri)
         val recognizer = SudokuBoardRecognizer(context)
-        //recognizer.setImageFromResource(R.drawable.sudokuboard1)
+        // recognizer.setImageFromResource(R.drawable.sudokuboard1)
         recognizer.setImageFromBitmap(bitmap)
         recognizer.execute()
         val predictionOutput = recognizer.predictionOutput
@@ -174,15 +192,12 @@ fun LaunchCameraBtn(
         icon = Icons.Rounded.PhotoCamera,
         descriptionResourceId = R.string.image_loading_activity_icon_description_camera,
     )
-
 }
-
 
 fun imageUriToBitmap(context: Context, uri: Uri): Bitmap {
     return if (Build.VERSION.SDK_INT < 28) {
         MediaStore.Images
             .Media.getBitmap(context.contentResolver, uri)
-
     } else {
         val source = ImageDecoder
             .createSource(context.contentResolver, uri)
