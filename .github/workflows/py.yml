@@ -16,8 +16,9 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt-get install graphviz
         python -m pip install --upgrade pip
-        pip install flake8 tensorflow numpy keras sklearn
+        pip install flake8 tensorflow numpy keras sklearn pydot
 
     - name: Build
       working-directory: ./ML

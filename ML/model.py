@@ -11,10 +11,11 @@ import numpy as np
 import sklearn.metrics
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from tensorflow.keras.utils import plot_model
 
 
-# Generate convolutional neural network model.
-def generateModel():
+# Generate convolutional neural network model 1.
+def generateModel1():
     # source: https://medium.com/analytics-vidhya/deep-learning-project-handwritten-digit-recognition-using-python-26da7ed11d1c
     model = keras.models.Sequential([
         # layer 1
@@ -43,59 +44,50 @@ def generateModel():
     return model
 
 
-# Generate convolutional neural network model.
+# Generate convolutional neural network model 2.
 def generateModel2():
     # source: https://towardsdatascience.com/going-beyond-99-mnist-handwritten-digits-recognition-cfff96337392
     model = keras.models.Sequential([
-        # Layer 1
+        # layer 1
         keras.layers.convolutional.Conv2D(
             filters=32, kernel_size=5, strides=1, activation='relu',
             input_shape=(dict.IMAGE_SIZE, dict.IMAGE_SIZE, 1), kernel_regularizer=keras.regularizers.l2(0.0005)
         ),
-        # Layer 2
+        # layer 2
         keras.layers.convolutional.Conv2D(filters=32, kernel_size=5, strides=1, use_bias=False),
-        # Layer 3
+        # layer 3
         keras.layers.BatchNormalization(),
-        # — — — — — — — — — — — — — — — — #
         keras.layers.Activation('relu'),
         keras.layers.pooling.MaxPooling2D(pool_size=2, strides=2),
         keras.layers.core.Dropout(0.25),
-        # — — — — — — — — — — — — — — — — #
-        # Layer 3
+        # layer 3
         keras.layers.convolutional.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', kernel_regularizer=keras.regularizers.l2(0.0005)),
-        # Layer 4
+        # layer 4
         keras.layers.convolutional.Conv2D(filters=64, kernel_size=3, strides=1, use_bias=False),
-        # Layer 5
+        # layer 5
         keras.layers.BatchNormalization(),
-        # — — — — — — — — — — — — — — — — #
         keras.layers.Activation('relu'),
         keras.layers.pooling.MaxPooling2D(pool_size=2, strides=2),
         keras.layers.core.Dropout(0.25),
+        # flatten
         keras.layers.core.Flatten(),
-        # — — — — — — — — — — — — — — — — #
-        # Layer 6
+        # layer 6
         keras.layers.core.Dense(units=256, use_bias=False),
-        # Layer 7
+        # layer 7
         keras.layers.BatchNormalization(),
-        # — — — — — — — — — — — — — — — — #
         keras.layers.core.Activation('relu'),
-        # — — — — — — — — — — — — — — — — #
-        # Layer 8
+        # layer 8
         keras.layers.core.Dense(units=128, use_bias=False),
-        # Layer 9
+        # layer 9
         keras.layers.BatchNormalization(),
-        # — — — — — — — — — — — — — — — — #
         keras.layers.core.Activation('relu'),
-        # — — — — — — — — — — — — — — — — #
-        # Layer 10
+        # layer 10
         keras.layers.core.Dense(units=84, use_bias=False),
-        # Layer 11
+        # layer 11
         keras.layers.BatchNormalization(),
-        # — — — — — — — — — — — — — — — — #
         keras.layers.core.Activation('relu'),
         keras.layers.core.Dropout(0.25),
-        # — — — — — — — — — — — — — — — — #
-        # Output
+        # output
         keras.layers.core.Dense(units=10, activation='softmax')
     ])
     model.compile(
@@ -173,3 +165,8 @@ def saveModel(model: keras.models.Sequential, filename: str):
         tflite_model = converter.convert()
         with open("Data/" + filename + ".tflite", "wb") as file:
             file.write(tflite_model)
+
+
+# Plot model and save as PNG.
+def plotModel(model: keras.models.Sequential, filename: str):
+    plot_model(model, to_file="Data/" + filename + ".png", show_shapes=True)
