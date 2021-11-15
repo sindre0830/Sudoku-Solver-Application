@@ -18,6 +18,7 @@ import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.Float
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -29,9 +30,9 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private var originalImage = Mat()
     private var boardMatrix = Mat()
     private val imageSize = Size(32.0, 32.0)
-    private val inputBuffer = ByteBuffer.allocateDirect(4 * imageSize.width.toInt() * imageSize.height.toInt()).apply { order(ByteOrder.nativeOrder()) }
+    private val inputBuffer = ByteBuffer.allocateDirect(Float.Companion.SIZE_BYTES * imageSize.width.toInt() * imageSize.height.toInt()).apply { order(ByteOrder.nativeOrder()) }
     // generate list of 81 zeros representing an empty board
-    var predictionOutput = MutableList(81) { 0 }
+    var predictionOutput = emptyBoard()
     lateinit var debugImage: Bitmap
     var flagDebugActivity = false
     var flagError = false
@@ -45,7 +46,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         // initialize Tensorflow Lite model
         model = Model.newInstance(context)
         // set list to be empty
-        predictionOutput = MutableList(81) { 0 }
+        predictionOutput = emptyBoard()
         // perform preprocessing
         extractBoard()
         if (flagError) return
@@ -56,27 +57,41 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         model.close()
     }
 
+    private fun emptyBoard(): MutableList<Int> {
+        return MutableList(81) { 0 }
+    }
+
     private fun loadOpenCV(): Boolean {
         return OpenCVLoader.initDebug()
     }
 
+    /**
+     * Warps and crops to sudoku board and saves it to the global variable, boardMatrix.
+     */
     private fun extractBoard() {
-        val fullImage = getOriginalImage()
-        // perform preprocessing of image
-        convertToGrayscale(fullImage)
-        performGaussianBlur(fullImage)
-        performAdaptiveThresholding(fullImage, Imgproc.ADAPTIVE_THRESH_MEAN_C xor Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, 5, 2.0)
-        performBitwiseNot(fullImage)
-        performDilation(fullImage)
-        // get board area in the image (finds largest rectangle in the image)
-        val boardCoordinates = findBoardCoordinates(fullImage)
+        var image = getOriginalImage()
+        /* perform preprocessing of image */
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2GRAY)
+        Imgproc.GaussianBlur(image, image, Size(11.0, 11.0), 0.0)
+        Imgproc.adaptiveThreshold(image, image, 255.0, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 5, 2.0)
+        Core.bitwise_not(image, image)
+        // perform dilation with a plus shaped kernel
+        val kernel = Mat.zeros(3, 3, CvType.CV_8U)
+        kernel.put(0, 0, byteArrayOf(0.toByte(), 1.toByte(), 0.toByte()))
+        kernel.put(1, 0, byteArrayOf(1.toByte(), 1.toByte(), 1.toByte()))
+        kernel.put(2, 0, byteArrayOf(0.toByte(), 1.toByte(), 0.toByte()))
+        Imgproc.dilate(image, image, kernel)
+        kernel.release()
+        // get board position in the image (finds largest rectangle in the image)
+        val boardCoordinates = findBoardCoordinates(image)
+        image.release()
         if (flagError) return
         // crop and warp the sudoku board
-        val boardImage = getOriginalImage()
-        focusOnBoard(boardImage, boardCoordinates)
-        setBoardMatrix(boardImage)
-        fullImage.release()
-        boardImage.release()
+        image = getOriginalImage()
+        focusOnBoard(image, boardCoordinates)
+        // update global variable
+        setBoardMatrix(image)
+        image.release()
     }
 
     private fun getOriginalImage(): Mat {
@@ -90,12 +105,6 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private fun convertToGrayscale(matrix: Mat) {
         val bufferMatrix = generateBuffer(matrix)
         Imgproc.cvtColor(bufferMatrix, matrix, Imgproc.COLOR_BGR2GRAY)
-        bufferMatrix.release()
-    }
-
-    private fun performGaussianBlur(matrix: Mat) {
-        val bufferMatrix = generateBuffer(matrix)
-        Imgproc.GaussianBlur(bufferMatrix, matrix, Size(11.0, 11.0), 0.0)
         bufferMatrix.release()
     }
 
