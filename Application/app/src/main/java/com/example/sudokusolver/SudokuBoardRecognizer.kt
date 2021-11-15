@@ -128,16 +128,6 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         bufferMatrix.release()
     }
 
-    private fun performDilation(matrix: Mat) {
-        val kernel = Mat.zeros(3, 3, CvType.CV_8U)
-        kernel.put(0, 0, byteArrayOf(0.toByte(), 1.toByte(), 0.toByte()))
-        kernel.put(1, 0, byteArrayOf(1.toByte(), 1.toByte(), 1.toByte()))
-        kernel.put(2, 0, byteArrayOf(0.toByte(), 1.toByte(), 0.toByte()))
-        val bufferMatrix = generateBuffer(matrix)
-        Imgproc.dilate(bufferMatrix, matrix, kernel)
-        bufferMatrix.release()
-    }
-
     private fun findBoardCoordinates(matrix: Mat): BoardCoordinates {
         val boardCoordinates = BoardCoordinates()
         // find contours and branch if an error occurred
@@ -219,62 +209,64 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         bufferMatrix.release()
     }
 
+    /**
+     * Get every cell position on the board.
+     */
     private fun getCellPositionsByContours(): List<Rect> {
-        // perform preprocessing of image
-        var boardImage = getBoardMatrix()
-        convertToGrayscale(boardImage)
-        Imgproc.Canny(boardImage, boardImage, 30.0, 90.0, 3, true)
-        performDilation(boardImage)
-        // set matrix data
-        val cellWidth = boardImage.width() / 9
-        val cellHeight = boardImage.height() / 9
+        /* perform preprocessing of image */
+        var image = getBoardMatrix()
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2GRAY)
+        Imgproc.Canny(image, image, 30.0, 90.0, 3, true)
+        // perform dilation with a plus shaped kernel
+        val kernel = Mat.zeros(3, 3, CvType.CV_8U)
+        kernel.put(0, 0, byteArrayOf(0.toByte(), 1.toByte(), 0.toByte()))
+        kernel.put(1, 0, byteArrayOf(1.toByte(), 1.toByte(), 1.toByte()))
+        kernel.put(2, 0, byteArrayOf(0.toByte(), 1.toByte(), 0.toByte()))
+        Imgproc.dilate(image, image, kernel)
+        kernel.release()
+        /* set matrix data */
+        val cellWidth = image.width() / 9
+        val cellHeight = image.height() / 9
         val thresholdUp = 1.20
         val thresholdDown = abs(thresholdUp - 2)
-        val contours = getContours(boardImage, Imgproc.RETR_TREE)
-        val cellAreas = mutableListOf<Rect>()
-        val bufferContours = mutableListOf<MatOfPoint>()
+        val contours = getContours(image, Imgproc.RETR_TREE)
+        val cellPositions = mutableListOf<Rect>()
+        image.release()
         // iterate through contours and store their positions if they are within acceptable cell area
         for (i in contours.indices) {
             val cellArea = Imgproc.boundingRect(contours[i])
             // branch if area is within cell limits
             if (cellArea.width <= cellWidth * thresholdUp && cellArea.height <= cellHeight * thresholdUp && cellArea.width >= cellWidth * thresholdDown && cellArea.height >= cellHeight * thresholdDown) {
                 // branch if first cell isn't set yet
-                if (cellAreas.isEmpty()) {
-                    cellAreas.add(cellArea)
-                    bufferContours.add(contours[i])
+                if (cellPositions.isEmpty()) {
+                    cellPositions.add(cellArea)
                 } else {
                     // branch if area is not too close to another cell
-                    if (!cellAreas.any { cellArea.x <= it.x + (cellWidth / 4) && cellArea.x >= it.x - (cellWidth / 4) && cellArea.y <= it.y + (cellHeight / 4) && cellArea.y >= it.y - (cellHeight / 4) }) {
-                        cellAreas.add(cellArea)
-                        bufferContours.add(contours[i])
+                    if (!cellPositions.any { cellArea.x <= it.x + (cellWidth / 4) && cellArea.x >= it.x - (cellWidth / 4) && cellArea.y <= it.y + (cellHeight / 4) && cellArea.y >= it.y - (cellHeight / 4) }) {
+                        cellPositions.add(cellArea)
                     }
                 }
             }
         }
-        if (bufferContours.size <= 80) {
+        contours.forEach { it.release() }
+        // branch if cells found isn't 81
+        if (cellPositions.size != 81) {
             flagError = true
-            return cellAreas
+            return cellPositions
         }
-        // draw contours for debugging
-        // val debug = getBoardMatrix()
-        // Imgproc.drawContours(debug, bufferContours, -1, Scalar(0.0, 0.0, 255.0), 1)
-        // setDebugImage(debug)
         // sort cell areas by y position and iterate through list to sort them by their respected position on the board
-        cellAreas.sortBy { it.y }
+        cellPositions.sortBy { it.y }
         for (row in 0..8) {
             val cellAreasBuffer = mutableListOf<Rect>()
             for (col in 0..8) {
-                cellAreasBuffer.add(cellAreas[row * 9 + col])
+                cellAreasBuffer.add(cellPositions[row * 9 + col])
             }
             cellAreasBuffer.sortBy { it.x }
             for (col in 0..8) {
-                cellAreas[row * 9 + col] = cellAreasBuffer[col]
+                cellPositions[row * 9 + col] = cellAreasBuffer[col]
             }
         }
-        // clean up
-        boardImage.release()
-        contours.forEach { it.release() }
-        return cellAreas
+        return cellPositions
     }
 
     private fun getCellPositionsByGrid(): List<Rect> {
