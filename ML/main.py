@@ -14,7 +14,8 @@ from model import (
     trainModel,
     analyzeModel,
     plotResults,
-    saveModel
+    saveModel,
+    plotModel
 )
 # import foreign modules
 import os
@@ -45,6 +46,7 @@ xTestMNIST = normalizeData(xTestMNIST)
 # generate sequential model and output model summary
 modelMNIST = generateModel2()
 modelMNIST.summary()
+plotModel(modelMNIST, "modelMNIST")
 
 
 # train model
@@ -73,6 +75,7 @@ xTrainChars, yTrainChars, xTestChars, yTestChars = prepareData(dataChars, labels
 # generate sequential model and output model summary
 modelChars = generateModel2()
 modelChars.summary()
+plotModel(modelChars, "modelChars")
 
 
 # train model
