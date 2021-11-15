@@ -19,4 +19,7 @@
     <string name="display_photo_icon_description_retake_photo">Retake photo</string>
     <string name="title_activity_history">HistoryActivity</string>
     <string name="title_activity_sample_images">SampleImagesActivity</string>
+
+    <string name="recognizer_error_extract_board">Failed to extract board from image</string>
+    <string name="recognizer_error_extract_cells">Failed to extract cells from board</string>
 </resources>
