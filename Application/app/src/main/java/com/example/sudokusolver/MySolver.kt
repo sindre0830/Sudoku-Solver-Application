@@ -16,6 +16,7 @@ object SudokuSolver {
     var maxIndex = 0
 
     var grid = arrayOf<Array<Int>>()
+    var tempGrid = arrayOf<Array<Int>>()
 
     fun fill(array: Array<Int>): Pair<Array<Int>, Boolean> {
         grid = parse1Dto2D(array)
@@ -30,9 +31,13 @@ object SudokuSolver {
 
     fun solve(): Pair<Array<Int>, Boolean> {
         getIndex(grid)
-        var finalBoard = traverse(0, grid)
+        tempGrid = grid
+        //var finalBoard = traverse(0, grid)
+        var finalBoard = traverse(0)
         // transform to 1D
-        return Pair(parse2Dto1D(finalBoard.first), finalBoard.second)
+        //return Pair(parse2Dto1D(finalBoard.first), finalBoard.second)
+        indexList.clear()
+        return Pair(parse2Dto1D(tempGrid), finalBoard)
     }
 
     fun getIndex(board: Array<Array<Int>>) {
@@ -50,30 +55,42 @@ object SudokuSolver {
         // Both sortBy and sortByDescending get stuck in loops
         // But same logic works as long as they're sorted by boardindex...weird
         //indexList.sortByDescending { it.second }
-        Log.i("size: ", indexList.count().toString())
     }
 
     // gets pretty far but still not working, let's fix later!
-    fun traverse(index: Int,  board: Array<Array<Int>>): Pair<Array<Array<Int>>, Boolean> {
-        val range = removeUsedValues(indexList.elementAt(index).first, board)
+    fun traverse(index: Int): Boolean {
+        val range = removeUsedValues(indexList.elementAt(index).first, tempGrid)
         // check if we got a good board
-        var result = Pair(board, status)
-        var rowIndex = indexList.elementAt(index).first / rows
-        var colIndex = indexList.elementAt(index).first % columns
-        var newBoard = copyArray(board)
+        var result = status
+        // the index we want to check is stored in indexList
+        var realI = indexList.elementAt(index).first
+        //var newBoard = copyArray(board)
 
         for (candidateValue in range) {
-            newBoard[rowIndex][colIndex] = candidateValue
+            //newBoard[rowI(realI)][colI(realI)] = candidateValue
+            tempGrid[rowI(realI)][colI(realI)] = candidateValue
+            // return if we reached the final index
             if(index == indexList.count()-1) {
                 status = true
-                return Pair(newBoard, status)
+                return status
             }
-            var temp = traverse(index + 1, newBoard)
-            if(temp.second == true) {
+
+            var temp = traverse(index + 1)
+            if(temp) {
                 return temp
             }
+            // clean up traversed indexes in wrong solutions - not working, think about more
+            for(i in (indexList.elementAt(index+1).first until indexList.count()-1)) {
+                // when we reach unfilled indexes we can stop
+                if (tempGrid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)] == 0) {
+                    break
+                } else if(tempGrid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)] != grid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)]) {
+                    tempGrid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)] = 0
+                }
+            }
         }
-
+        //printBoard(tempGrid)
+        //Log.i("BREAK", "           ")
         // does not update if board is unsolvable!!
         return result
     }
@@ -99,6 +116,13 @@ object SudokuSolver {
         var noSquare = removeSquare(noCol, index, board)
 
         return noSquare
+    }
+
+    fun rowI(index: Int): Int {
+        return index / rows
+    }
+    fun colI(index: Int): Int {
+        return index % columns
     }
 
     // WORKS
