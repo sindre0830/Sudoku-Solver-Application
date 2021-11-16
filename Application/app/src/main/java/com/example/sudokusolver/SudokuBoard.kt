@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+// Stores the given board and makes it for other code to interact with the board in safe manner
 class SudokuBoard(
     private val sudokuBoardItems: SnapshotStateList<SudokuBoardItem>,
     val currentGameHistory: SnapshotStateList<CurrentGameHistoryItem>,
@@ -56,6 +57,8 @@ class SudokuBoard(
         }
     }
 
+    // Mutates the board by creating a new SudokuBoardItem.
+    // This is done to trigger a UI update. Updating a class member will not trigger a UI update
     private fun mutateBoard(
         index: Int,
         backgroundColor: Color?,

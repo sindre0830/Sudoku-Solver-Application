@@ -153,11 +153,13 @@ class MainActivity : ComponentActivity() {
         // }.start()
     }
 
+    // Loads the last played board
     private suspend fun loadBoard(): List<Int>? {
         val pref = dataStore.data.first()
         return pref[SUDOKU_BOARD]?.split(",")?.map { it.toInt() }
     }
 
+    // Saves the board history as a serialized json string
     private suspend fun saveBoardToHistory(board: List<Int>) {
         dataStore.edit { pref ->
             val historyEntries = loadBoardHistory()
@@ -171,6 +173,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Loads the board history and deserialize the json string
     private suspend fun loadBoardHistory(): MutableList<PreviousGamesHistoryItem> {
         val pref = dataStore.data.first()
         val historyStr = pref[SUDOKU_BOARD_HISTORY] ?: return mutableListOf()
@@ -184,6 +187,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// Converts the board item numbers to a list of SudokuBoardItem
 fun setupBoard(items: List<Int>): SnapshotStateList<SudokuBoardItem> {
     val list = mutableStateListOf<SudokuBoardItem>()
     items.forEach {
