@@ -22,4 +22,5 @@
 
     <string name="recognizer_error_extract_board">Failed to extract board from image</string>
     <string name="recognizer_error_extract_cells">Failed to extract cells from board</string>
+    <string name="algorithm_error_correct_board">Could not solve board, check if legal</string>
 </resources>

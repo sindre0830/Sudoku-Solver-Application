@@ -1,12 +1,14 @@
 // Inspiration: https://github.com/TypicalDevStuff/sudoku-generator
 package com.example.sudokusolver
 
+import android.content.Context
 import android.util.Log
 import java.lang.Math.sqrt
 
-object SudokuSolver {
+class SudokuSolver constructor(private val context: Context) {
     // solved?
     var status = false
+    var error: String? = null
     var rows = 9
     var columns = rows
     var squareSides = sqrt(rows.toDouble()).toInt()
@@ -16,9 +18,9 @@ object SudokuSolver {
 
     var grid = arrayOf<Array<Int>>()
 
-    fun fill(array: Array<Int>): Pair<Array<Int>, Boolean> {
+    fun fill(array: Array<Int>): Pair<Array<Int>, String?> {
         grid = parse1Dto2D(array)
-        return(solve())
+        return (solve())
     }
 
     fun printBoard(board: Array<Array<Int>>) {
@@ -27,11 +29,23 @@ object SudokuSolver {
         }
     }
 
-    fun solve(): Pair<Array<Int>, Boolean> {
+    private fun setError(key: Int) {
+        error = context.getString(key)
+    }
+
+    fun solve(): Pair<Array<Int>, String?> {
         getIndex(grid)
         var finalBoard = traverse(0, grid)
-        // transform to 1D
-        return Pair(parse2Dto1D(finalBoard.first), finalBoard.second)
+        status = finalBoard.second
+        if(!status){
+            setError(R.string.algorithm_error_correct_board)
+        }
+        if (error != null) {
+            Log.e("SudokuSolver", error!!)
+            return Pair(parse2Dto1D(grid), error)
+        } else {
+            return Pair(parse2Dto1D(finalBoard.first), error)
+        }
     }
 
     fun getIndex(board: Array<Array<Int>>) {
@@ -128,7 +142,11 @@ object SudokuSolver {
         return newRange
     }
 
-    fun removeSquare(range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
+    fun removeSquare(
+        range: MutableList<Int>,
+        index: Int,
+        board: Array<Array<Int>>
+    ): MutableList<Int> {
         val rowStart = findBoxStart(index / rows)
         val rowEnd = findBoxEnd(rowStart)
         val columnStart = findBoxStart(index % columns)

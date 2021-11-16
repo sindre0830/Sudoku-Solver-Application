@@ -1,5 +1,6 @@
 package com.example.sudokusolver
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,11 +16,13 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.FileDownload
 import androidx.compose.material.icons.rounded.Undo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -70,7 +73,8 @@ fun handleActionMenuItems(
     startImageLoadingActivity: () -> Unit,
     mutateBoard: mutateBoardFn,
     mutateBoardNumber: mutateBoardNumberFn,
-    addSudokuBoardAsSolved: (List<Int>) -> Unit
+    addSudokuBoardAsSolved: (List<Int>) -> Unit,
+    context: Context
 ): List<ActionMenuItem> {
     return listOf(
         ActionMenuItem(
@@ -101,14 +105,14 @@ fun handleActionMenuItems(
             icon = Icons.Rounded.Calculate,
             contentDescriptionResourceId = R.string.action_menu_icon_description_solve,
             handleClick = {
-                var solved = SudokuSolver.fill(board.map { it.number }.toTypedArray())
+                val solved = SudokuSolver(context).fill(board.map { it.number }.toTypedArray())
                 for (i in solved.first.indices) {
                     mutateBoardNumber(i, solved.first[i])
                 }
-                // Add is solved fun
-                fun isSolved() = solved.second
                 // Only add to history if solved
-                if (isSolved()) {
+                if (solved.second != null) {
+                    // error handle here
+                } else {
                     addSudokuBoardAsSolved(board.map { it.number })
                 }
             }
