@@ -39,7 +39,6 @@ class SudokuBoard(
     fun mutate(index: Int, backgroundColor: Color) = mutate(index, backgroundColor, null)
     fun mutate(index: Int, number: Int) = mutate(index, null, number)
 
-
     private fun updateCurrentGameHistory(
         index: Int,
         number: Int?,
