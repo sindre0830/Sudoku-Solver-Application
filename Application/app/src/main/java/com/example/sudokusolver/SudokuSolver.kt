@@ -17,6 +17,7 @@ class SudokuSolver constructor(private val context: Context) {
     var maxIndex = 0
 
     var grid = arrayOf<Array<Int>>()
+    var tempGrid = arrayOf<Array<Int>>()
 
     fun fill(array: Array<Int>): Pair<Array<Int>, String?> {
         grid = parse1Dto2D(array)
@@ -71,12 +72,13 @@ class SudokuSolver constructor(private val context: Context) {
         val range = removeUsedValues(indexList.elementAt(index).first, board)
         // check if we got a good board
         var result = Pair(board, status)
-        var rowIndex = indexList.elementAt(index).first / rows
-        var colIndex = indexList.elementAt(index).first % columns
+        // the index we want to check is stored in indexList
+        var realI = indexList.elementAt(index).first
         var newBoard = copyArray(board)
 
         for (candidateValue in range) {
-            newBoard[rowIndex][colIndex] = candidateValue
+            // check if realI or I
+            newBoard[rowI(realI)][colI(realI)] = candidateValue
             if (index == indexList.count() - 1) {
                 status = true
                 return Pair(newBoard, status)
@@ -85,8 +87,18 @@ class SudokuSolver constructor(private val context: Context) {
             if (temp.second == true) {
                 return temp
             }
+            // clean up traversed indexes in wrong solutions - not working, think about more
+            for(i in (indexList.elementAt(index+1).first until indexList.count()-1)) {
+                // when we reach unfilled indexes we can stop
+                if (tempGrid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)] == 0) {
+                    break
+                } else if(tempGrid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)] != grid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)]) {
+                    tempGrid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)] = 0
+                }
+            }
         }
-
+        //printBoard(tempGrid)
+        //Log.i("BREAK", "           ")
         // does not update if board is unsolvable!!
         return result
     }
@@ -112,6 +124,13 @@ class SudokuSolver constructor(private val context: Context) {
         var noSquare = removeSquare(noCol, index, board)
 
         return noSquare
+    }
+
+    fun rowI(index: Int): Int {
+        return index / rows
+    }
+    fun colI(index: Int): Int {
+        return index % columns
     }
 
     // WORKS
