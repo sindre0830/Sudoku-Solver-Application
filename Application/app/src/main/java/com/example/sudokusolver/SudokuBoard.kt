@@ -34,12 +34,12 @@ fun mockBoard(verticalLength: Int): MutableList<Int> {
 }
 
 @Composable
-fun SudokuBoard(
-    items: List<SudokuBoardItem>,
+fun SudokuBoardUI(
+    sudokuBoardItems: List<SudokuBoardItem>,
     verticalLength: Int,
     onItemClick: (index: Int) -> Unit,
 ) {
-    validateBoard(items.map { it.number }, verticalLength)
+    validateBoard(sudokuBoardItems.map { it.number }, verticalLength)
 
     var currentItem = 0
 
@@ -49,7 +49,7 @@ fun SudokuBoard(
                 for (rowItem in 0 until verticalLength) {
                     SudokuBoxItem(
                         index = currentItem,
-                        item = items[currentItem],
+                        item = sudokuBoardItems[currentItem],
                         onItemClick = onItemClick
                     )
                     currentItem++
@@ -59,7 +59,6 @@ fun SudokuBoard(
     }
 }
 
-// TODO: How to handle error messages
 fun validateBoard(items: List<Int>, verticalLength: Int) {
     if (verticalLength == 0) {
         throw Error("board length cannot be 0")
