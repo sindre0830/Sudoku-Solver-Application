@@ -122,7 +122,7 @@ fun deleteSudokuItem(sudokuItemClicked: Int, board: SudokuBoard) {
 }
 
 fun clearSudokuBoard(board: SudokuBoard) {
-    for (i in 0 until board.items.size) {
+    for (i in board.items.indices) {
         board.mutate(
             i,
             Color.White,
