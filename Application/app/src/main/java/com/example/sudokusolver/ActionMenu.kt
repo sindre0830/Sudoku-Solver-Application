@@ -68,32 +68,30 @@ fun ActionMenu(actionMenuItems: List<ActionMenuItem>) {
 
 fun handleActionMenuItems(
     sudokuItemClicked: Int,
-    board: List<SudokuBoardItem>,
+    sudokuBoard: SudokuBoard,
     currentGameHistory: SnapshotStateList<CurrentGameHistoryItem>,
     startImageLoadingActivity: () -> Unit,
-    mutateBoard: mutateBoardFn,
-    mutateBoardNumber: mutateBoardNumberFn,
-    addSudokuBoardAsSolved: (List<Int>) -> Unit,
-    context: Context
+    context: Context,
+    addSudokuBoardAsSolved: (List<Int>) -> Unit
 ): List<ActionMenuItem> {
     return listOf(
         ActionMenuItem(
             icon = Icons.Rounded.Clear,
             contentDescriptionResourceId = R.string.action_menu_icon_description_clear,
-            handleClick = { clearSudokuBoard(board.size, mutateBoard) },
+            handleClick = { clearSudokuBoard(sudokuBoard) },
         ),
         ActionMenuItem(
             icon = Icons.Rounded.Undo,
             contentDescriptionResourceId = R.string.action_menu_icon_description_remove,
             handleClick = {
-                undoOperation(mutateBoardNumber, currentGameHistory)
+                undoOperation(sudokuBoard, currentGameHistory)
             },
         ),
         ActionMenuItem(
             icon = Icons.Rounded.Delete,
             contentDescriptionResourceId = R.string.action_menu_icon_description_delete,
             handleClick = {
-                deleteSudokuItem(sudokuItemClicked, mutateBoardNumber)
+                deleteSudokuItem(sudokuItemClicked, sudokuBoard)
             },
         ),
         ActionMenuItem(
@@ -105,15 +103,15 @@ fun handleActionMenuItems(
             icon = Icons.Rounded.Calculate,
             contentDescriptionResourceId = R.string.action_menu_icon_description_solve,
             handleClick = {
-                val solved = SudokuSolver(context).fill(board.map { it.number }.toTypedArray())
+                val solved = SudokuSolver(context).fill(sudokuBoard.items.map { it.number }.toTypedArray())
                 for (i in solved.first.indices) {
-                    mutateBoardNumber(i, solved.first[i])
+                    sudokuBoard.mutate(i, solved.first[i])
                 }
                 // Only add to history if solved
                 if (solved.second != null) {
                     // error handle here
                 } else {
-                    addSudokuBoardAsSolved(board.map { it.number })
+                    addSudokuBoardAsSolved(sudokuBoard.items.map { it.number })
                 }
             }
 
@@ -121,16 +119,16 @@ fun handleActionMenuItems(
     )
 }
 
-fun deleteSudokuItem(sudokuItemClicked: Int, mutateBoardNumber: mutateBoardNumberFn) {
-    mutateBoardNumber(
+fun deleteSudokuItem(sudokuItemClicked: Int, board: SudokuBoard) {
+    board.mutate(
         sudokuItemClicked,
         0,
     )
 }
 
-fun clearSudokuBoard(boardSize: Int, mutateBoard: mutateBoardFn) {
-    for (i in 0 until boardSize) {
-        mutateBoard(
+fun clearSudokuBoard(board: SudokuBoard) {
+    for (i in board.items.indices) {
+        board.mutate(
             i,
             Color.White,
             0,
@@ -139,13 +137,13 @@ fun clearSudokuBoard(boardSize: Int, mutateBoard: mutateBoardFn) {
 }
 
 fun undoOperation(
-    mutateBoardNumber: mutateBoardNumberFn,
+    board: SudokuBoard,
     history: SnapshotStateList<CurrentGameHistoryItem>
 ) {
     if (history.isNotEmpty()) {
         val historyItem = history[history.lastIndex]
         history.remove(historyItem)
-        mutateBoardNumber(
+        board.mutate(
             historyItem.sudokuItem,
             historyItem.oldValue,
         )

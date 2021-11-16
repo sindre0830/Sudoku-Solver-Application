@@ -86,8 +86,8 @@ fun HistoryActivityItem(historyItem: PreviousGamesHistoryItem) {
             modifier = Modifier
                 .size(150.dp),
         ) {
-            SudokuBoard(
-                items = historyItem.board.map { SudokuBoardItem(it) },
+            SudokuBoardUI(
+                sudokuBoardItems = historyItem.board.map { SudokuBoardItem(it) },
                 verticalLength = 9,
                 onItemClick = {}
             )
