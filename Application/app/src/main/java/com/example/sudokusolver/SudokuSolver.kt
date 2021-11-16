@@ -37,7 +37,7 @@ class SudokuSolver constructor(private val context: Context) {
         getIndex(grid)
         var finalBoard = traverse(0, grid)
         status = finalBoard.second
-        if(!status){
+        if (!status) {
             setError(R.string.algorithm_error_correct_board)
         }
         if (error != null) {

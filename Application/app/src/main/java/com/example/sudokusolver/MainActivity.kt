@@ -6,11 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.mutableStateListOf
@@ -34,7 +30,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.Date
+import java.util.*
 import kotlin.collections.ArrayList
 
 const val SUDOKU_BOARD_KEY = "sudoku_board"
@@ -42,9 +38,10 @@ const val SUDOKU_BOARD_HISTORY_KEY = "sudoku_board_history"
 
 // adding store here to ensure it is a singleton
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SUDOKU_BOARD_KEY)
+
+// stringPreferences are used for storing the board
 val SUDOKU_BOARD = stringPreferencesKey(SUDOKU_BOARD_KEY)
 private val SUDOKU_BOARD_HISTORY = stringPreferencesKey(SUDOKU_BOARD_HISTORY_KEY)
-
 typealias mutateBoardColorFn = (index: Int, backgroundColor: Color) -> Unit
 
 class MainActivity : ComponentActivity() {
@@ -220,7 +217,3 @@ fun updateBackgroundColor(
         ColorBoxSelected,
     )
 }
-
-
-
-
