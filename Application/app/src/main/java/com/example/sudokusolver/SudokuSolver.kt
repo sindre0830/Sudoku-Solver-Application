@@ -2,7 +2,6 @@
 package com.example.sudokusolver
 
 import android.content.Context
-import java.lang.Math.sqrt
 
 class SudokuSolver constructor(private val context: Context) {
     var status = false
@@ -17,12 +16,16 @@ class SudokuSolver constructor(private val context: Context) {
 
     // initializes our SudokuSolver
     fun init(array: Array<Int>): Pair<Array<Int>, String?> {
-        grid = parse1Dto2D(array)
+        if (array.count { it != 0 } < 16) {
+            setError(R.string.algorithm_error_board_too_few_numbers)
+            return Pair(array, error)
+        }
         // Check that the board isn't already full
         if (!array.contains(0)) {
             setError(R.string.algorithm_error_board_full)
             return Pair(array, error)
         }
+        grid = parse1Dto2D(array)
         return (solve())
     }
 
@@ -123,7 +126,11 @@ class SudokuSolver constructor(private val context: Context) {
     }
 
     // Removes numbers in the same column
-    private fun removeCol(range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
+    private fun removeCol(
+        range: MutableList<Int>,
+        index: Int,
+        board: Array<Array<Int>>
+    ): MutableList<Int> {
         var newRange: MutableList<Int> = range
 
         board.forEach {
@@ -161,6 +168,7 @@ class SudokuSolver constructor(private val context: Context) {
     private fun rowI(index: Int): Int {
         return index / rows
     }
+
     private fun colI(index: Int): Int {
         return index % columns
     }

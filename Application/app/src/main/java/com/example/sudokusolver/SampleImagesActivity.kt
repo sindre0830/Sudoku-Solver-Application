@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -24,12 +27,14 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.sudokusolver.ui.theme.SudokuSolverTheme
-import java.util.ArrayList
+import java.util.*
 
 class SampleImagesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val scaffoldState = rememberScaffoldState()
+            val snackbarCoroutineScope = rememberCoroutineScope()
             val imageResourceIds = listOf(
                 R.drawable.sudokuboard1,
                 R.drawable.sudokuboard2,
@@ -42,13 +47,24 @@ class SampleImagesActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colors.background
                 ) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxSize()
+                    Scaffold(
+                        scaffoldState = scaffoldState,
                     ) {
-                        items(imageResourceIds) { id ->
-                            DisplayResourceImage(id)
+                        LazyColumn(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(imageResourceIds) { id ->
+                                DisplayResourceImage(id) { msg ->
+                                    Intent(
+                                        applicationContext,
+                                        MainActivity::class.java
+                                    ).putExtra(
+                                        ERROR_EXTRA, msg
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -58,7 +74,7 @@ class SampleImagesActivity : ComponentActivity() {
 }
 
 @Composable
-fun DisplayResourceImage(resourceId: Int) {
+fun DisplayResourceImage(resourceId: Int, displayError: (String) -> Unit) {
     val context = LocalContext.current
     val bitmap = ImageBitmap.imageResource(id = resourceId)
     Image(
@@ -70,16 +86,19 @@ fun DisplayResourceImage(resourceId: Int) {
                 val recognizer = SudokuBoardRecognizer(context)
                 recognizer.setImageFromBitmap(bitmap.asAndroidBitmap())
                 val (predictionOutput, error) = recognizer.execute()
-
-                Log.d("OpenCV", predictionOutput.toString())
-                context.startActivity(
-                    Intent(
-                        context,
-                        MainActivity::class.java
-                    ).putIntegerArrayListExtra(
-                        SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
+                if (error != null) {
+                    displayError(error)
+                } else {
+                    Log.d("OpenCV", predictionOutput.toString())
+                    context.startActivity(
+                        Intent(
+                            context,
+                            MainActivity::class.java
+                        ).putIntegerArrayListExtra(
+                            SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
+                        )
                     )
-                )
+                }
             }
     )
 }

@@ -5,18 +5,24 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -35,6 +41,7 @@ import kotlin.collections.ArrayList
 
 const val SUDOKU_BOARD_KEY = "sudoku_board"
 const val SUDOKU_BOARD_HISTORY_KEY = "sudoku_board_history"
+const val ERROR_EXTRA = "ERROR"
 
 // adding store here to ensure it is a singleton
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SUDOKU_BOARD_KEY)
@@ -55,6 +62,7 @@ class MainActivity : ComponentActivity() {
         val verticalLength = 9
 
         setContent {
+            val (error, setError) = remember { mutableStateOf(intent.getStringExtra(ERROR_EXTRA)) }
             val (sudokuBoxClicked, setSudokuBoxClicked) = remember { mutableStateOf(0) }
             val boardNumbers: List<Int> = runBlocking {
                 intent.getIntegerArrayListExtra(SUDOKU_BOARD_KEY)?.toList()
@@ -125,9 +133,16 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 addSudokuBoardAsSolved = { solvedBoardNumbers ->
-                                    lifecycleScope.launch { saveBoardToHistory(solvedBoardNumbers) }
+                                    lifecycleScope.launch {
+                                        saveBoardToHistory(
+                                            solvedBoardNumbers
+                                        )
+                                    }
                                 },
-                                context = LocalContext.current
+                                context = LocalContext.current,
+                                displayError = { msg ->
+                                    setError(msg)
+                                }
                             )
                         )
                         BottomNumbers(handleClick = { numberClicked ->
@@ -137,6 +152,12 @@ class MainActivity : ComponentActivity() {
                             )
                         })
                         Spacer(modifier = Modifier.padding(bottom = 10.dp))
+                    }
+
+                    if (error != null) {
+                        DisplayError(error) {
+                            setError(null)
+                        }
                     }
                 }
             }
@@ -181,6 +202,35 @@ class MainActivity : ComponentActivity() {
             historyStr,
             historyEntriesType
         )
+    }
+}
+
+@Composable
+fun DisplayError(msg: String, removeErrorMsg: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.Transparent)
+            .clickable {
+                removeErrorMsg()
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(75.dp)
+                .padding(10.dp)
+                .background(color = Color(color = 0xFF8B0000)),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = msg,
+                style = TextStyle(color = Color.White, fontSize = 16.sp),
+            )
+        }
     }
 }
 
