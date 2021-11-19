@@ -24,8 +24,8 @@ class SudokuSolver constructor(private val context: Context) {
         // Check that the board isn't already full
         if (!array.contains(0)) {
             // Check if full board is legal - return error if it isn't
-            if(checkValid(grid)) {
-               return Pair(array, error)
+            if (checkValid(grid)) {
+                return Pair(array, error)
             }
             setError(R.string.algorithm_error_board_illegal)
             return Pair(array, error)
