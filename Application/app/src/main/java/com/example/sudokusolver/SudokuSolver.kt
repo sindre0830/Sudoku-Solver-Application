@@ -197,7 +197,7 @@ class SudokuSolver constructor(private val context: Context) {
                 if (removeRow(board[i][j], board).isNotEmpty() ||
                     removeCol((1..9).toMutableList(), board[i][j], board).isNotEmpty() ||
                     removeSquare((1..9).toMutableList(), board[i][j], board).isNotEmpty()
-                    ) {
+                ) {
                     return false
                 }
             }
