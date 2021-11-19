@@ -62,7 +62,8 @@ fun handleActionMenuItems(
     currentGameHistory: SnapshotStateList<CurrentGameHistoryItem>,
     startImageLoadingActivity: () -> Unit,
     context: Context,
-    addSudokuBoardAsSolved: (List<Int>) -> Unit
+    addSudokuBoardAsSolved: (List<Int>) -> Unit,
+    displayError: (msg: String) -> Unit
 ): List<ActionMenuItem> {
     return listOf(
         ActionMenuItem(
@@ -93,10 +94,12 @@ fun handleActionMenuItems(
             icon = Icons.Rounded.Calculate,
             contentDescriptionResourceId = R.string.action_menu_icon_description_solve,
             handleClick = {
-                val (solvedBoard, error) = SudokuSolver(context).init(sudokuBoard.items.map { it.number }.toTypedArray())
+                val (solvedBoard, error) = SudokuSolver(context).init(
+                    sudokuBoard.items.map { it.number }.toTypedArray()
+                )
                 // Only add to history if solved
                 if (error != null) {
-                    // error handle here
+                    displayError(error)
                 } else {
                     for (i in solvedBoard.indices) {
                         sudokuBoard.mutate(i, solvedBoard[i])

@@ -17,24 +17,12 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.Replay
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,7 +42,8 @@ import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
+import kotlin.collections.ArrayList
 
 class CameraActivity : ComponentActivity() {
     private lateinit var outputDirectory: File
@@ -105,6 +94,16 @@ class CameraActivity : ComponentActivity() {
                                             this,
                                             CameraActivity::class.java
                                         ).setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+                                    )
+                                },
+                                displayError = { msg ->
+                                    startActivity(
+                                        Intent(
+                                            applicationContext,
+                                            MainActivity::class.java
+                                        ).putExtra(
+                                            ERROR_EXTRA, msg
+                                        )
                                     )
                                 }
                             )
@@ -235,7 +234,7 @@ fun CameraPreview(
 
 // Displays the captured photo and user can decide to use photo or retake
 @Composable
-private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
+private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit, displayError: (String) -> Unit) {
     val bitmap = remember {
         mutableStateOf<Bitmap?>(null)
     }
@@ -277,14 +276,17 @@ private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
                         val recognizer = SudokuBoardRecognizer(context)
                         recognizer.setImageFromBitmap(btm)
                         val (predictionOutput, error) = recognizer.execute()
+                        if (error != null) {
+                            displayError(error)
+                        } else {
+                            Log.d("OpenCV", predictionOutput.toString())
 
-                        Log.d("OpenCV", predictionOutput.toString())
-
-                        context.startActivity(
-                            Intent(context, MainActivity::class.java).putExtra(
-                                SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
+                            context.startActivity(
+                                Intent(context, MainActivity::class.java).putExtra(
+                                    SUDOKU_BOARD_KEY, ArrayList(predictionOutput)
+                                )
                             )
-                        )
+                        }
                     },
                     shape = RoundedCornerShape(10.dp)
                 ) {
