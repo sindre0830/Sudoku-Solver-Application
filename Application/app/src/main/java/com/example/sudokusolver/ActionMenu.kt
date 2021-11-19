@@ -105,7 +105,7 @@ fun handleActionMenuItems(
             icon = Icons.Rounded.Calculate,
             contentDescriptionResourceId = R.string.action_menu_icon_description_solve,
             handleClick = {
-                val solved = SudokuSolver(context).fill(board.map { it.number }.toTypedArray())
+                val solved = SudokuSolver(context).init(board.map { it.number }.toTypedArray())
                 for (i in solved.first.indices) {
                     mutateBoardNumber(i, solved.first[i])
                 }
@@ -116,7 +116,6 @@ fun handleActionMenuItems(
                     addSudokuBoardAsSolved(board.map { it.number })
                 }
             }
-
         )
     )
 }

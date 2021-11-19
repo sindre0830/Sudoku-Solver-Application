@@ -6,7 +6,6 @@ import android.util.Log
 import java.lang.Math.sqrt
 
 class SudokuSolver constructor(private val context: Context) {
-    // solved?
     var status = false
     var error: String? = null
     var rows = 9
@@ -14,42 +13,42 @@ class SudokuSolver constructor(private val context: Context) {
     var squareSides = sqrt(rows.toDouble()).toInt()
     var indexList = mutableListOf<Pair<Int, Int>>()
 
-    var maxIndex = 0
-
     var grid = arrayOf<Array<Int>>()
-    var tempGrid = arrayOf<Array<Int>>()
+    var finishedBoard = arrayOf<Array<Int>>()
 
-    fun fill(array: Array<Int>): Pair<Array<Int>, String?> {
+    // initializes our SudokuSolver
+    fun init(array: Array<Int>): Pair<Array<Int>, String?> {
         grid = parse1Dto2D(array)
-        return (solve())
-    }
-
-    fun printBoard(board: Array<Array<Int>>) {
-        for (i in board.indices) {
-            Log.i("Board: ", board[i].contentToString())
+        // Check that the board isn't already full
+        if(!array.contains(0)) {
+            setError(R.string.algorithm_error_board_full)
+            return Pair(array, error)
         }
+        return (solve())
     }
 
     private fun setError(key: Int) {
         error = context.getString(key)
     }
 
+    // Our handler function that performs transformations and runs traverse
     fun solve(): Pair<Array<Int>, String?> {
         getIndex(grid)
-        var finalBoard = traverse(0, grid)
-        status = finalBoard.second
+        traverse(0, grid)
         if(!status){
             setError(R.string.algorithm_error_correct_board)
         }
         if (error != null) {
-            Log.e("SudokuSolver", error!!)
             return Pair(parse2Dto1D(grid), error)
         } else {
-            return Pair(parse2Dto1D(finalBoard.first), error)
+            return Pair(parse2Dto1D(finishedBoard), error)
         }
     }
 
-    fun getIndex(board: Array<Array<Int>>) {
+    // Gets the indices of our 1D array that are empty, and therefore need to be filled
+    // This way we don't waste resources/memory on traversing through already filled
+    // indices
+    private fun getIndex(board: Array<Array<Int>>) {
         var rowI = 0
         var colI = 0
         for (i in (0..80)) {
@@ -60,63 +59,48 @@ class SudokuSolver constructor(private val context: Context) {
                 indexList.add(Pair(i, removeUsedValues(i, board).count()))
             }
         }
-        // Stops working here...
-        // Both sortBy and sortByDescending get stuck in loops
-        // But same logic works as long as they're sorted by boardindex...weird
+        // Worked on sorting by size, but both starting lowest and highest failed/were slow
         // indexList.sortByDescending { it.second }
-        Log.i("size: ", indexList.count().toString())
     }
 
     // gets pretty far but still not working, let's fix later!
-    fun traverse(index: Int, board: Array<Array<Int>>): Pair<Array<Array<Int>>, Boolean> {
-        val range = removeUsedValues(indexList.elementAt(index).first, board)
-        // check if we got a good board
-        var result = Pair(board, status)
-        // the index we want to check is stored in indexList
+    private fun traverse(index: Int, board: Array<Array<Int>>): Boolean {
+        // the index we want to check is stored in indexList, so we extract it
         var realI = indexList.elementAt(index).first
+        val range = removeUsedValues(realI, board)
+        // the index we want to check is stored in indexList, so we extract it
         var newBoard = copyArray(board)
 
         for (candidateValue in range) {
             // check if realI or I
             newBoard[rowI(realI)][colI(realI)] = candidateValue
             if (index == indexList.count() - 1) {
+                finishedBoard = newBoard
                 status = true
-                return Pair(newBoard, status)
+                return status
             }
-            var temp = traverse(index + 1, newBoard)
-            if (temp.second == true) {
-                return temp
-            }
-            // clean up traversed indexes in wrong solutions - not working, think about more
-            for(i in (indexList.elementAt(index+1).first until indexList.count()-1)) {
-                // when we reach unfilled indexes we can stop
-                if (tempGrid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)] == 0) {
-                    break
-                } else if(tempGrid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)] != grid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)]) {
-                    tempGrid[rowI(indexList.elementAt(i).first)][colI(indexList.elementAt(i).first)] = 0
-                }
+            traverse(index + 1, newBoard)
+            if (status == true) {
+                return status
             }
         }
-        //printBoard(tempGrid)
-        //Log.i("BREAK", "           ")
         // does not update if board is unsolvable!!
-        return result
+        return status
     }
 
+    // Performs copying (rather than simply referencing) board
     private fun copyArray(old: Array<Array<Int>>): Array<Array<Int>> {
-        val newArray: Array<Array<Int>> = Array<Array<Int>>(9) { Array<Int>(9) { 0 } }
+        val newArray: Array<Array<Int>> = Array(9) { Array(9) { 0 } }
         for (i in (0..8)) {
             newArray[i] = old[i].copyOf()
         }
         return newArray
     }
 
-    fun removeUsedValues(index: Int, board: Array<Array<Int>>): List<Int> {
-        var rowIndex = index / rows
-        var colIndex = index % columns
+    private fun removeUsedValues(index: Int, board: Array<Array<Int>>): List<Int> {
         // If square is prefilled, return only that value
-        if (board[rowIndex][colIndex] != 0) {
-            return listOf(board[rowIndex][colIndex])
+        if (board[rowI(index)][colI(index)] != 0) {
+            return listOf(board[rowI(index)][colI(index)])
         }
 
         var noRow = removeRow(index, board)
@@ -126,20 +110,11 @@ class SudokuSolver constructor(private val context: Context) {
         return noSquare
     }
 
-    fun rowI(index: Int): Int {
-        return index / rows
-    }
-    fun colI(index: Int): Int {
-        return index % columns
-    }
-
-    // WORKS
-    fun removeRow(index: Int, board: Array<Array<Int>>): MutableList<Int> {
-        var rowIndex = index / rows
-
+    // Removes numbers in the same row
+    private fun removeRow(index: Int, board: Array<Array<Int>>): MutableList<Int> {
         var newRange: MutableList<Int> = (1..9).toMutableList()
 
-        board[rowIndex].forEach {
+        board[rowI(index)].forEach {
             if (it != 0) {
                 newRange.remove(it)
             }
@@ -148,27 +123,28 @@ class SudokuSolver constructor(private val context: Context) {
         return newRange
     }
 
-    fun removeCol(range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
-        var colIndex = index % columns
+    // Removes numbers in the same column
+    private fun removeCol(range: MutableList<Int>, index: Int, board: Array<Array<Int>>): MutableList<Int> {
         var newRange: MutableList<Int> = range
 
         board.forEach {
-            if (it[colIndex] != 0) {
-                newRange.remove(it[colIndex])
+            if (it[colI(index)] != 0) {
+                newRange.remove(it[colI(index)])
             }
         }
 
         return newRange
     }
 
-    fun removeSquare(
+    // Removes numbers in the same 3x3 square
+    private fun removeSquare(
         range: MutableList<Int>,
         index: Int,
         board: Array<Array<Int>>
     ): MutableList<Int> {
-        val rowStart = findBoxStart(index / rows)
+        val rowStart = findBoxStart(rowI(index))
         val rowEnd = findBoxEnd(rowStart)
-        val columnStart = findBoxStart(index % columns)
+        val columnStart = findBoxStart(colI(index))
         val columnEnd = findBoxEnd(columnStart)
 
         var newRange: MutableList<Int> = range
@@ -184,11 +160,20 @@ class SudokuSolver constructor(private val context: Context) {
         return newRange
     }
 
-    private fun findBoxStart(index: Int) = index - index % squareSides
+    // Functions to get row and col index from 1D
+    private fun rowI(index: Int): Int {
+        return index / rows
+    }
+    private fun colI(index: Int): Int {
+        return index % columns
+    }
 
+    // helper functions for removeSquare
+    private fun findBoxStart(index: Int) = index - index % squareSides
     private fun findBoxEnd(index: Int) = index + squareSides
 
-    fun parse1Dto2D(oneD: Array<Int>): Array<Array<Int>> {
+    // Parser function from array to 2D array
+    private fun parse1Dto2D(oneD: Array<Int>): Array<Array<Int>> {
         var newgrid = Array(9) {
             Array(9, { 0 })
         }
@@ -200,7 +185,8 @@ class SudokuSolver constructor(private val context: Context) {
         return newgrid
     }
 
-    fun parse2Dto1D(twoD: Array<Array<Int>>): Array<Int> {
+    // Parser function from 2D array to array
+    private fun parse2Dto1D(twoD: Array<Array<Int>>): Array<Int> {
         var newgrid = Array(81) { 0 }
         for (i in (0 until rows)) {
             for (j in (0 until columns)) {
