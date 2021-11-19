@@ -23,6 +23,6 @@
     <string name="recognizer_error_extract_board">Failed to extract board from image</string>
     <string name="recognizer_error_extract_cells">Failed to extract cells from board</string>
     <string name="algorithm_error_correct_board">Could not solve board, check if legal</string>
-    <string name="algorithm_error_board_full">Board is already filled - no squares to fill</string>
+    <string name="algorithm_error_board_illegal">This board is illegal - check your solution!</string>
     <string name="algorithm_error_board_too_few_numbers">There must be at least 17 filled squares</string>
 </resources>

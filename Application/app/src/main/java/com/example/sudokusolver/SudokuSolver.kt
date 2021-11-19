@@ -20,12 +20,15 @@ class SudokuSolver constructor(private val context: Context) {
             setError(R.string.algorithm_error_board_too_few_numbers)
             return Pair(array, error)
         }
+        grid = parse1Dto2D(array)
         // Check that the board isn't already full
         if (!array.contains(0)) {
-            setError(R.string.algorithm_error_board_full)
+            if(checkValid(grid)) {
+               return Pair(array, error)
+            }
+            setError(R.string.algorithm_error_board_illegal)
             return Pair(array, error)
         }
-        grid = parse1Dto2D(array)
         return (solve())
     }
 
