@@ -190,4 +190,18 @@ class SudokuSolver constructor(private val context: Context) {
         }
         return newgrid
     }
+
+    // Checks that each box sees every number in row, column and square
+    private fun checkValid(board: Array<Array<Int>>): Boolean {
+        for (i in (0 until rows)) {
+            for (j in (0 until columns)) {
+                if (removeRow(board[i][j], board).isNotEmpty() ||
+                    removeCol((1..9).toMutableList(), board[i][j], board).isNotEmpty() ||
+                    removeSquare((1..9).toMutableList(), board[i][j], board).isNotEmpty()) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
 }
