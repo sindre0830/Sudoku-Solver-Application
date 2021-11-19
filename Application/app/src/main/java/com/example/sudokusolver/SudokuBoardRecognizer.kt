@@ -39,18 +39,18 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
     private val inputBuffer = ByteBuffer.allocateDirect(
         Float.Companion.SIZE_BYTES * imageSize.width.toInt() * imageSize.height.toInt()
     ).apply { order(ByteOrder.nativeOrder()) }
-    var predictionOutput = emptyBoard()
+    private var predictionOutput = emptyBoard()
     var flagDebugActivity = false
-    var error: String? = null
+    private var error: String? = null
 
     /**
      * Performs the pipeline required to get predictions.
      */
-    fun execute() {
+    fun execute(): Pair<MutableList<Int>, String?> {
         // check if dependencies has been loaded
         if (!dependenciesLoaded) {
             Log.e("OpenCV", "OpenCV failed to load and is preventing image recognition")
-            return
+            return Pair(predictionOutput, error)
         }
         // set list to be empty
         predictionOutput = emptyBoard()
@@ -59,7 +59,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         if (error != null) {
             Log.e("SudokuBoardRecognizer", error!!)
             originalImage.release()
-            return
+            return Pair(predictionOutput, error)
         }
         // get cell positions and branch if an error occurred
         val cellPositions = getCellPositionsByContours()
@@ -67,7 +67,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
             Log.e("SudokuBoardRecognizer", error!!)
             originalImage.release()
             boardImage.release()
-            return
+            return Pair(predictionOutput, error)
         }
         // initialize Tensorflow Lite model
         model = Model.newInstance(context)
@@ -76,6 +76,7 @@ class SudokuBoardRecognizer constructor(private val context: Context) {
         model.close()
         originalImage.release()
         boardImage.release()
+        return Pair(predictionOutput, error)
     }
 
     /**
