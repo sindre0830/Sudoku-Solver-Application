@@ -2,7 +2,6 @@
 package com.example.sudokusolver
 
 import android.content.Context
-import android.util.Log
 import java.lang.Math.sqrt
 
 class SudokuSolver constructor(private val context: Context) {
@@ -10,7 +9,7 @@ class SudokuSolver constructor(private val context: Context) {
     var error: String? = null
     var rows = 9
     var columns = rows
-    var squareSides = sqrt(rows.toDouble()).toInt()
+    var squareSides = kotlin.math.sqrt(rows.toDouble()).toInt()
     var indexList = mutableListOf<Pair<Int, Int>>()
 
     var grid = arrayOf<Array<Int>>()
@@ -20,7 +19,7 @@ class SudokuSolver constructor(private val context: Context) {
     fun init(array: Array<Int>): Pair<Array<Int>, String?> {
         grid = parse1Dto2D(array)
         // Check that the board isn't already full
-        if(!array.contains(0)) {
+        if (!array.contains(0)) {
             setError(R.string.algorithm_error_board_full)
             return Pair(array, error)
         }
@@ -35,7 +34,7 @@ class SudokuSolver constructor(private val context: Context) {
     fun solve(): Pair<Array<Int>, String?> {
         getIndex(grid)
         traverse(0, grid)
-        if(!status){
+        if (!status) {
             setError(R.string.algorithm_error_correct_board)
         }
         if (error != null) {
@@ -132,7 +131,6 @@ class SudokuSolver constructor(private val context: Context) {
                 newRange.remove(it[colI(index)])
             }
         }
-
         return newRange
     }
 
@@ -156,7 +154,6 @@ class SudokuSolver constructor(private val context: Context) {
                 }
             }
         }
-
         return newRange
     }
 
@@ -178,9 +175,7 @@ class SudokuSolver constructor(private val context: Context) {
             Array(9, { 0 })
         }
         for (i in oneD.indices) {
-            var rowIndex = i / rows
-            var colIndex = i % columns
-            newgrid[rowIndex][colIndex] = oneD[i]
+            newgrid[rowI(i)][colI(i)] = oneD[i]
         }
         return newgrid
     }
