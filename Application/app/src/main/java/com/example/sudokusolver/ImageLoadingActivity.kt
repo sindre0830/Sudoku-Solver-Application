@@ -152,12 +152,11 @@ fun LoadImageFromGalleryBtn() {
         descriptionResourceId = R.string.image_loading_activity_icon_description_gallery,
     )
     imageUri?.let { uri ->
-        val bitmap = imageUriToBitmap(context, uri)
+        val btm = imageUriToBitmap(context, uri)
+
         val recognizer = SudokuBoardRecognizer(context)
-        // recognizer.setImageFromResource(R.drawable.sudokuboard1)
-        recognizer.setImageFromBitmap(bitmap)
-        recognizer.execute()
-        val predictionOutput = recognizer.predictionOutput
+        recognizer.setImageFromBitmap(btm)
+        val (predictionOutput, error) = recognizer.execute()
 
         Log.d("OpenCV", predictionOutput.toString())
 

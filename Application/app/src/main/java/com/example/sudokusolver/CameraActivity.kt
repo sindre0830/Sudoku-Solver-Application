@@ -150,6 +150,7 @@ class CameraActivity : ComponentActivity() {
         )
     }
 
+    // Return the File where the captured photo can be saved
     private fun getOutputDirectory(): File {
         val mediaDir = externalMediaDirs.firstOrNull()?.let {
             File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
@@ -164,6 +165,7 @@ class CameraActivity : ComponentActivity() {
     }
 }
 
+// Binds the Camera Provider to the live preview
 fun bindPreview(
     cameraProvider: ProcessCameraProvider,
     lifecycleOwner: LifecycleOwner,
@@ -231,6 +233,7 @@ fun CameraPreview(
     }
 }
 
+// Displays the captured photo and user can decide to use photo or retake
 @Composable
 private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
     val bitmap = remember {
@@ -271,10 +274,9 @@ private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
                 Spacer(modifier = Modifier.padding(15.dp))
                 Button(
                     onClick = {
-                        val predictionOutput = SudokuBoardRecognizer(context).also {
-                            it.setImageFromBitmap(btm)
-                            it.execute()
-                        }.predictionOutput
+                        val recognizer = SudokuBoardRecognizer(context)
+                        recognizer.setImageFromBitmap(btm)
+                        val (predictionOutput, error) = recognizer.execute()
 
                         Log.d("OpenCV", predictionOutput.toString())
 

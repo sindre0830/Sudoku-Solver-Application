@@ -6,11 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.mutableStateListOf
@@ -34,7 +30,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.Date
+import java.util.*
 import kotlin.collections.ArrayList
 
 const val SUDOKU_BOARD_KEY = "sudoku_board"
@@ -43,69 +39,33 @@ const val SUDOKU_BOARD_HISTORY_KEY = "sudoku_board_history"
 // adding store here to ensure it is a singleton
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = SUDOKU_BOARD_KEY)
 
-typealias mutateBoardFn = (index: Int, backgroundColor: Color, number: Int) -> Unit
+// stringPreferences are used for storing the board
+val SUDOKU_BOARD = stringPreferencesKey(SUDOKU_BOARD_KEY)
+private val SUDOKU_BOARD_HISTORY = stringPreferencesKey(SUDOKU_BOARD_HISTORY_KEY)
 typealias mutateBoardColorFn = (index: Int, backgroundColor: Color) -> Unit
-typealias mutateBoardNumberFn = (index: Int, number: Int) -> Unit
 
 class MainActivity : ComponentActivity() {
-    private val SUDOKU_BOARD = stringPreferencesKey(SUDOKU_BOARD_KEY)
-    private val SUDOKU_BOARD_HISTORY = stringPreferencesKey(SUDOKU_BOARD_HISTORY_KEY)
+
+    companion object {
+        lateinit var sudokuBoard: SudokuBoard
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val verticalLength = 9
 
         setContent {
-            val board: List<Int> = runBlocking {
+            val (sudokuBoxClicked, setSudokuBoxClicked) = remember { mutableStateOf(0) }
+            val boardNumbers: List<Int> = runBlocking {
                 intent.getIntegerArrayListExtra(SUDOKU_BOARD_KEY)?.toList()
                     ?: loadBoard()
                     ?: mockBoard(9)
             }
-
-            val sudokuBoard: SnapshotStateList<SudokuBoardItem> =
-                remember { setupBoard(board) }
-            val (sudokuBoxClicked, setSudokuBoxClicked) = remember { mutableStateOf(0) }
-            val currentGameHistory: SnapshotStateList<CurrentGameHistoryItem> =
-                remember { mutableStateListOf() }
-
-            fun isNewNumber(old: Int, new: Int) = old != new
-
-            // mutateBoard mutates a sudoku item and allows for optional arguments
-            fun mutateBoard(
-                index: Int,
-                backgroundColor: Color? = null,
-                number: Int? = null,
-            ) {
-                if (!isBoxWithinBoard(index, sudokuBoard.size)) return
-                number?.let { if (!isValidSudokuNum(number)) return }
-
-                number?.let {
-                    if (isNewNumber(sudokuBoard[index].number, number)) {
-                        currentGameHistory.add(
-                            CurrentGameHistoryItem(
-                                newValue = number,
-                                oldValue = sudokuBoard[index].number,
-                                sudokuItem = index
-                            )
-                        )
-                    }
-                }
-
-                sudokuBoard[index] = sudokuBoard[index].copy(
-                    backgroundColor = backgroundColor ?: sudokuBoard[index].backgroundColor,
-                    number = number ?: sudokuBoard[index].number
-                )
-
-                lifecycleScope.launch {
-                    persistBoard(sudokuBoard.map { it.number })
-                }
-            }
-
-            fun mutateBoardColor(index: Int, backgroundColor: Color) =
-                mutateBoard(index, backgroundColor, null)
-
-            fun mutateBoardNumber(index: Int, number: Int) =
-                mutateBoard(index, null, number)
+            sudokuBoard = SudokuBoard(
+                sudokuBoardItems = remember { setupBoard(boardNumbers) },
+                currentGameHistory = remember { mutableStateListOf() },
+                dataStore = dataStore
+            )
 
             SudokuSolverTheme {
                 Surface(
@@ -134,8 +94,8 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        SudokuBoard(
-                            items = sudokuBoard,
+                        SudokuBoardUI(
+                            sudokuBoardItems = sudokuBoard.items,
                             verticalLength = verticalLength,
                             onItemClick = { index: Int ->
                                 updateBackgroundColor(
@@ -143,7 +103,7 @@ class MainActivity : ComponentActivity() {
                                     currentSudokuBox = sudokuBoxClicked,
                                     setSudokuBox = setSudokuBoxClicked,
                                     mutateBoardColor = { i, backgroundColor ->
-                                        mutateBoardColor(
+                                        sudokuBoard.mutate(
                                             i,
                                             backgroundColor
                                         )
@@ -154,8 +114,8 @@ class MainActivity : ComponentActivity() {
                         ActionMenu(
                             handleActionMenuItems(
                                 sudokuItemClicked = sudokuBoxClicked,
-                                board = sudokuBoard,
-                                currentGameHistory = currentGameHistory,
+                                sudokuBoard = sudokuBoard,
+                                currentGameHistory = sudokuBoard.currentGameHistory,
                                 startImageLoadingActivity = {
                                     Intent(
                                         applicationContext,
@@ -164,16 +124,14 @@ class MainActivity : ComponentActivity() {
                                         startActivity(it)
                                     }
                                 },
-                                mutateBoard = { i, bg, num -> mutateBoard(i, bg, num) },
-                                mutateBoardNumber = { i, num -> mutateBoardNumber(i, num) },
                                 addSudokuBoardAsSolved = { solvedBoardNumbers ->
                                     lifecycleScope.launch { saveBoardToHistory(solvedBoardNumbers) }
                                 },
-                                LocalContext.current
+                                context = LocalContext.current
                             )
                         )
                         BottomNumbers(handleClick = { numberClicked ->
-                            mutateBoardNumber(
+                            sudokuBoard.mutate(
                                 sudokuBoxClicked,
                                 numberClicked
                             )
@@ -192,17 +150,13 @@ class MainActivity : ComponentActivity() {
         // }.start()
     }
 
-    private suspend fun persistBoard(board: List<Int>) {
-        dataStore.edit { pref ->
-            pref[SUDOKU_BOARD] = board.joinToString(separator = ",")
-        }
-    }
-
+    // Loads the last played board
     private suspend fun loadBoard(): List<Int>? {
         val pref = dataStore.data.first()
         return pref[SUDOKU_BOARD]?.split(",")?.map { it.toInt() }
     }
 
+    // Saves the board history as a serialized json string
     private suspend fun saveBoardToHistory(board: List<Int>) {
         dataStore.edit { pref ->
             val historyEntries = loadBoardHistory()
@@ -216,6 +170,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Loads the board history and deserialize the json string
     private suspend fun loadBoardHistory(): MutableList<PreviousGamesHistoryItem> {
         val pref = dataStore.data.first()
         val historyStr = pref[SUDOKU_BOARD_HISTORY] ?: return mutableListOf()
@@ -229,6 +184,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// Converts the board item numbers to a list of SudokuBoardItem
 fun setupBoard(items: List<Int>): SnapshotStateList<SudokuBoardItem> {
     val list = mutableStateListOf<SudokuBoardItem>()
     items.forEach {
@@ -261,7 +217,3 @@ fun updateBackgroundColor(
         ColorBoxSelected,
     )
 }
-
-fun isBoxWithinBoard(n: Int, boardSize: Int) = n in 0 until boardSize
-
-fun isValidSudokuNum(n: Int) = n in 0..9
