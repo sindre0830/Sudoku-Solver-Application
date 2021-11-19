@@ -23,6 +23,7 @@ class SudokuSolver constructor(private val context: Context) {
         grid = parse1Dto2D(array)
         // Check that the board isn't already full
         if (!array.contains(0)) {
+            // Check if full board is legal - return error if it isn't
             if(checkValid(grid)) {
                return Pair(array, error)
             }
