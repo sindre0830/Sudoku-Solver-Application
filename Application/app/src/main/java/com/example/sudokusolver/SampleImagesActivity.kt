@@ -69,9 +69,7 @@ fun DisplayResourceImage(resourceId: Int) {
             .clickable {
                 val recognizer = SudokuBoardRecognizer(context)
                 recognizer.setImageFromBitmap(bitmap.asAndroidBitmap())
-
-                recognizer.execute()
-                val predictionOutput = recognizer.predictionOutput
+                val (predictionOutput, error) = recognizer.execute()
 
                 Log.d("OpenCV", predictionOutput.toString())
                 context.startActivity(

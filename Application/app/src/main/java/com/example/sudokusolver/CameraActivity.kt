@@ -274,10 +274,9 @@ private fun DisplayPhoto(photoUri: Uri, retakePhoto: () -> Unit) {
                 Spacer(modifier = Modifier.padding(15.dp))
                 Button(
                     onClick = {
-                        val predictionOutput = SudokuBoardRecognizer(context).also {
-                            it.setImageFromBitmap(btm)
-                            it.execute()
-                        }.predictionOutput
+                        val recognizer = SudokuBoardRecognizer(context)
+                        recognizer.setImageFromBitmap(btm)
+                        val (predictionOutput, error) = recognizer.execute()
 
                         Log.d("OpenCV", predictionOutput.toString())
 
