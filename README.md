@@ -1,5 +1,6 @@
 # Sudoku Solver Application
 Project for PROG2007 2021 Autmn course
+Full report: report.pdf
 
 ## Introduction
 This project involves making an app that will solve a Sudoku puzzle for the user. The puzzle can be added in three ways: Manually entering numbers onto a board, loading in an existing photo from the gallery, or taking a new photo. The solver will attempt to solve the puzzle passed to it, and if successful will display the finished board to the user in the same activity. If no sudoku board is detected, the user will get a message about this. If a board that has errors is passed in and the app cannot solve it, it will return a message about this and reset the board.
